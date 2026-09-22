@@ -8,15 +8,18 @@ type DragStopHandler = (event: DraggableEvent, data: DraggableData) => void;
 interface DraggableProps {
     position: any;
     onDragStop: DragStopHandler;
+    onDragStart: DragStopHandler;
 }
 
-export default function Draggable({ onDragStop } : DraggableProps) {
+export default function Draggable({ position, onDragStop, onDragStart }: DraggableProps) {
   return (
     <Rnd
-        default={{
-            x: 20, y: 20, width: 100, height: 100,
-        }}
+        position={position}
         onDragStop={onDragStop}
+        onDragStart={onDragStart}
+        enableResizing={false}
+        className="draggable-pin"
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()} // Prevent click event from propagating to parent
     >
         <div><PiMapPin /> City</div>
     </Rnd>
