@@ -22,10 +22,26 @@
 }
 
 #draggable-container{
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  appearance: none;
   width: 20%;
   height: 20%;
-  border: solid black;
   position: absolute;
-  background-color: lime;
+  background-color: brown;
   text-align: center;
+}
+
+#check-button {
+  position: absolute;
+  top: 250px;
+  left: 0px;
+  width: 20%;
+  height: 10%;
 }

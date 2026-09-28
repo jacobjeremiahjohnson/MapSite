@@ -12,6 +12,7 @@ interface DraggableContainerProps {
 type Child = {
     id: number;
     position: { x: number; y: number };
+    text: string;
 }
 
 interface DragStopEvent {
@@ -27,8 +28,8 @@ export default function DraggableContainer({ width, height }: DraggableContainer
     const [position, setPosition] = useState({ x: 15, y: 15 });
     const [children, setChildren] = useState<Child[]>([]);
     const [childrenCount, setChildrenCount] = useState(0);
+    const [trigger, setTrigger] = useState(false);
     const parentRef = useRef<HTMLButtonElement | null>(null);
-    
     const [relativePos, setRelativePos] = useState({ x: 0, y: 0 });
 
     const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -66,27 +67,45 @@ export default function DraggableContainer({ width, height }: DraggableContainer
         console.log('Drag started at:', d.x, d.y);
     };
 
+    const handleClick = () => {
+        setChildren(prev => [...prev, { id: childrenCount, position: relativePos, text: '' }]);
+        setChildrenCount(prev => prev + 1);
+    }
+
+    const handleCheckButtonClick = () => {
+        setTrigger(prev => !prev);
+    }
+
     useEffect(() => {
         const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
         console.log(projection.invert?.([position.x, position.y])); // Log the geographic coordinates of the draggable's position
       
     }, [position]);
 
-    const handleClick = () => {
-        setChildren(prev => [...prev, { id: childrenCount, position: relativePos }]);
-        setChildrenCount(prev => prev + 1);
-    }
+    useEffect(() => {
+        for (const child of children) {
+            const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
+            const geoCoords = projection.invert?.([child.position.x, child.position.y]);
+            console.log(`Child ID: ${child.id}, Position: (${child.position.x}, ${child.position.y}), Geographic Coordinates: ${geoCoords}, Text: ${child.text}`);
+        }
+    }, [trigger]);
 
     return (
-    <button id="draggable-container" ref={parentRef} onClick={handleClick} onMouseMove={handleMouseMove}>
-        City Box {relativePos.x}, {relativePos.y}
-        {children.map((child) => (
-            <Draggable 
-                key={child.id}
-                position={child.position}
-                onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
-                onDragStart={handleDragStart}
-            />
-        ))}
-    </button>
+    <div>
+        <button id="draggable-container" ref={parentRef} onClick={handleClick} onMouseMove={handleMouseMove}>
+            {children.map((child) => (
+                <Draggable 
+                    key={child.id}
+                    position={child.position}
+                    onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
+                    onDragStart={handleDragStart}
+                    id={child.id}
+                    setChildren={setChildren}
+                />
+            ))}
+        </button>
+        <button id="check-button" onClick={handleCheckButtonClick}>Log Children</button>
+    </div>
 )};
+
+export type { Child };
