@@ -40,6 +40,10 @@ export default function DraggableContainer({ width, height }: DraggableContainer
 
     const handleDragStop = (e: DragStopEvent, d: DraggableData, id: number): void => {
         
+        setChildren(prev => prev.map(child =>
+            child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
+        ))
+
         const parentBox = parentRef.current?.getBoundingClientRect();
 
         if (!parentBox) return;
@@ -49,8 +53,6 @@ export default function DraggableContainer({ width, height }: DraggableContainer
             d.y >= 0 &&
             d.x <= parentBox.width &&
             d.y <= parentBox.height;
-
-        setPosition({ x: d.x, y: d.y });
         
         if (inside) {
             setChildren(prev =>
