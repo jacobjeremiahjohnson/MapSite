@@ -2,11 +2,14 @@ import Draggable from './Draggable';
 import { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import geoData from '../assets/DEGeo.json';
+import testData from '../assets/DE_cities.json';
 import type { DraggableData } from 'react-rnd';
 
 interface DraggableContainerProps {
     width: number;
     height: number;
+    setTrigger: (trigger: boolean) => void;
+    trigger: boolean;
 }
 
 type Child = {
@@ -24,11 +27,10 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function DraggableContainer({ width, height }: DraggableContainerProps) {
+export default function DraggableContainer({ width, height, setTrigger, trigger }: DraggableContainerProps) {
     const [position, setPosition] = useState({ x: 15, y: 15 });
     const [children, setChildren] = useState<Child[]>([]);
     const [childrenCount, setChildrenCount] = useState(0);
-    const [trigger, setTrigger] = useState(false);
     const parentRef = useRef<HTMLButtonElement | null>(null);
     const [relativePos, setRelativePos] = useState({ x: 0, y: 0 });
 
@@ -73,7 +75,7 @@ export default function DraggableContainer({ width, height }: DraggableContainer
     }
 
     const handleCheckButtonClick = () => {
-        setTrigger(prev => !prev);
+        setTrigger(!trigger);
     }
 
     useEffect(() => {
@@ -86,7 +88,15 @@ export default function DraggableContainer({ width, height }: DraggableContainer
         for (const child of children) {
             const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
             const geoCoords = projection.invert?.([child.position.x, child.position.y]);
-            console.log(`Child ID: ${child.id}, Position: (${child.position.x}, ${child.position.y}), Geographic Coordinates: ${geoCoords}, Text: ${child.text}`);
+            for (const city of testData) {
+                if (geoCoords && city.latitude && city.longitude) {
+                    const distance = Math.sqrt(Math.pow(geoCoords[0] - Number(city.longitude), 2) + Math.pow(geoCoords[1] - Number(city.latitude), 2));
+                    if (distance < 0.1) { // Adjust the threshold as needed
+                        console.log(`Child ID: ${child.id} is near city: ${city.name}`);
+                    }
+                }
+            }
+
         }
     }, [trigger]);
 

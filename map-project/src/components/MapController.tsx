@@ -8,7 +8,8 @@ export default function MapController() {
     const [{width, height}, setWH] = useState({ width: 1000, height: 1000 });
     const [text, setText] = useState('');
     const dropZoneRef = useRef<HTMLDivElement | null>(null);
-    
+    const [trigger, setTrigger] = useState(false);
+
     useEffect(() => {    
       const load = function(){
         fetch( './DE_cities.csv' )
@@ -23,7 +24,7 @@ export default function MapController() {
 
     return (
     <div ref={dropZoneRef} id="map" style={{ height: '80vh', width: '100%' }}>
-      <DraggableContainer width={width} height={height} />
-      <Map width={width} height={height} />
+      <DraggableContainer setTrigger={setTrigger} width={width} height={height} trigger={trigger} />
+      <Map width={width} height={height} trigger={trigger} />
     </div>
 )};
