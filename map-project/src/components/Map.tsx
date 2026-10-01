@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import geoData from '../assets/DEGeo.json';
 import testData from '../assets/DE_cities.json';
 import * as d3 from 'd3';
@@ -8,9 +8,18 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function Map({ width = 800, height = 600, trigger }: { width?: number; height?: number, trigger?: boolean }) {
+export default function Map({ width, height, trigger }: { width?: number; height?: number, trigger?: boolean }) {
+
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
+  const drawMap = (data: any) => {
+    
+  }
 
   const paths = useMemo(() => {
+    if (!width || !height) {
+      return [];
+    }
     const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
     const path = d3.geoPath(projection);
 
@@ -32,6 +41,10 @@ export default function Map({ width = 800, height = 600, trigger }: { width?: nu
   }, [width, height]);
 
   const cityMarkers = useMemo(() => {
+    if (!width || !height) {
+      return [];
+    }
+
     const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
     return testData.map((city: any, index: number) => {
       const [x, y] = projection([city.longitude, city.latitude]) || [0, 0];
@@ -44,8 +57,11 @@ export default function Map({ width = 800, height = 600, trigger }: { width?: nu
     });
   }, [width, height]);
 
+  window.addEventListener('resize', () => drawMap(geoData));
+
+
   return (
-    <svg id='map' viewBox={`0 0 ${width} ${height}`} width={width} height={height}>
+    <svg ref={svgRef} id='map-svg' viewBox={`0 0 ${width} ${height}`} width={width} height={height}>
       <g className='maplayer'>
         {paths.map((pathItem) => (
           <path
@@ -53,7 +69,7 @@ export default function Map({ width = 800, height = 600, trigger }: { width?: nu
             d={pathItem.d}
             fill='lightgray'
             stroke='black'
-            strokeWidth='0.5'
+            strokeWidth='0.3'
           />
         ))}
         {trigger && cityMarkers.map((city) => (

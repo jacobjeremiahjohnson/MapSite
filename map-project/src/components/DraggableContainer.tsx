@@ -9,6 +9,7 @@ interface DraggableContainerProps {
     width: number;
     height: number;
     setTrigger: (trigger: boolean) => void;
+    setScore: (score: number) => void;
     trigger: boolean;
 }
 
@@ -27,7 +28,7 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function DraggableContainer({ width, height, setTrigger, trigger }: DraggableContainerProps) {
+export default function DraggableContainer({ width, height, setTrigger, trigger, setScore }: DraggableContainerProps) {
     const [position, setPosition] = useState({ x: 15, y: 15 });
     const [children, setChildren] = useState<Child[]>([]);
     const [childrenCount, setChildrenCount] = useState(0);
@@ -42,7 +43,6 @@ export default function DraggableContainer({ width, height, setTrigger, trigger 
     };
 
     const handleDragStop = (e: DragStopEvent, d: DraggableData, id: number): void => {
-        
         setChildren(prev => prev.map(child =>
             child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
         ))
@@ -88,15 +88,17 @@ export default function DraggableContainer({ width, height, setTrigger, trigger 
         for (const child of children) {
             const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
             const geoCoords = projection.invert?.([child.position.x, child.position.y]);
+            let score = 0;
             for (const city of testData) {
                 if (geoCoords && city.latitude && city.longitude) {
                     const distance = Math.sqrt(Math.pow(geoCoords[0] - Number(city.longitude), 2) + Math.pow(geoCoords[1] - Number(city.latitude), 2));
-                    if (distance < 0.1) { // Adjust the threshold as needed
+                    if (distance < 0.05) { // Adjust the threshold as needed
                         console.log(`Child ID: ${child.id} is near city: ${city.name}`);
+                        score = score + (1 - distance);
                     }
                 }
             }
-
+            setScore(score);
         }
     }, [trigger]);
 

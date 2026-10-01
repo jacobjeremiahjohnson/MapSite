@@ -38,7 +38,7 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
       <div>
         <PiMapPin /> 
         <input 
-          type="text" 
+          type="text"
           placeholder="Enter city name" 
           value={text}
           onChange={handleChange} 
