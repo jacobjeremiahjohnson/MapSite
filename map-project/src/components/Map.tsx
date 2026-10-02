@@ -61,8 +61,8 @@ export default function Map({ width, height, trigger }: { width?: number; height
 
 
   return (
-    <svg ref={svgRef} id='map-svg' viewBox={`0 0 ${width} ${height}`} width={width} height={height}>
-      <g className='maplayer'>
+    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} style={{ width: '100%', height: '100%' }}>
+      <g>
         {paths.map((pathItem) => (
           <path
             key={pathItem.id}

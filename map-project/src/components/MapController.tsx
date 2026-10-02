@@ -35,7 +35,13 @@ export default function MapController() {
     }, [score]);
 
     return (
-    <div ref={dropZoneRef} id="map" style={{ height: '80vh', width:'100%', maxWidth: '100%' }}>
+    <div ref={dropZoneRef} style={{
+      height: '80vh',
+      width: '95%',
+      maxWidth: '100%',
+      padding: '2%',
+      border: '2px solid black',
+    }}>
       <DraggableContainer setScore={setScore} setTrigger={setTrigger} width={width} height={height} trigger={trigger} />
       <MapComponent width={width} height={height} trigger={trigger} />
       {trigger && <div>Score: {score}</div>}

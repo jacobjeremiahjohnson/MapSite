@@ -104,7 +104,26 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
 
     return (
     <div>
-        <button id="draggable-container" ref={parentRef} onClick={handleClick} onMouseMove={handleMouseMove}>
+        <button
+            ref={parentRef}
+            onClick={handleClick}
+            onMouseMove={handleMouseMove}
+            style={{
+                background: 'brown',
+                color: 'inherit',
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                font: 'inherit',
+                cursor: 'pointer',
+                outline: 'inherit',
+                appearance: 'none',
+                width: '20%',
+                height: '20%',
+                position: 'absolute',
+                textAlign: 'center',
+            }}
+        >
             {children.map((child) => (
                 <Draggable 
                     key={child.id}
@@ -116,7 +135,12 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
                 />
             ))}
         </button>
-        <button id="check-button" onClick={handleCheckButtonClick}>Log Children</button>
+        <button
+            onClick={handleCheckButtonClick}
+            style={{ position: 'absolute', top: '30%', width: '20%', height: '10%' }}
+        >
+            Log Children
+        </button>
     </div>
 )};
 
