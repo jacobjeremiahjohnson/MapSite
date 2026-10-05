@@ -1,8 +1,11 @@
 import Draggable from './Draggable';
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import * as d3 from 'd3';
 import geoData from '../assets/DEGeo.json';
 import testData from '../assets/DE_cities.json';
+import cornerImg from '../assets/pngtree-vector-effect-of-curled-page-corner-and-angled-white-sticker-with-blank-space-vector-png-image_30402186.png';
+import clue from '../assets/clue.png';
 import type { DraggableData } from 'react-rnd';
 
 interface DraggableContainerProps {
@@ -77,6 +80,7 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
     const handleCheckButtonClick = () => {
         setTrigger(!trigger);
     }
+    const rootElement = document.getElementById('root');
 
     useEffect(() => {
         const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
@@ -121,6 +125,7 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
                 width: '20%',
                 height: '20%',
                 position: 'absolute',
+                zIndex: 0,
                 textAlign: 'center',
             }}
         >
@@ -135,12 +140,13 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
                 />
             ))}
         </button>
-        <button
+        <img src={clue} alt="Clue" style={{ position: 'absolute', zIndex: 1, bottom: 20, right: 15, width: '25%', height: '20%', background: 'transparent', border: 'none'}} />
+        {rootElement && createPortal(<button
             onClick={handleCheckButtonClick}
-            style={{ position: 'absolute', top: '30%', width: '20%', height: '10%' }}
+            style={{ position: 'absolute', zIndex: 1, bottom: 0, right: -5, width: '20%', height: '10%', background: 'transparent', border: 'none', cursor: 'pointer' }}
         >
-            Log Children
-        </button>
+            <img src={cornerImg} alt="Check" style={{ width: '100%', height: '100%' }} />
+        </button>, rootElement)}
     </div>
 )};
 

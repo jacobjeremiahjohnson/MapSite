@@ -5,6 +5,8 @@ function App() {
   useEffect(() => {
     const body = document.body;
     const originalStyle = body.getAttribute('style');
+    const root = document.getElementById('root');
+    const originalRootStyle = root?.getAttribute('style');
 
     Object.assign(body.style, {
       fontFamily: "'CartoonFont', sans-serif",
@@ -16,6 +18,7 @@ function App() {
       backgroundPosition: 'top left',
       backgroundSize: '800px',
     });
+    if (root) root.style.position = 'relative';
 
     let loadedFont: FontFace | undefined;
     let cancelled = false;
@@ -43,6 +46,13 @@ function App() {
       } else {
         body.setAttribute('style', originalStyle);
       }
+      if (root) {
+        if (originalRootStyle === null) {
+          root.removeAttribute('style');
+        } else if (originalRootStyle !== undefined) {
+          root.setAttribute('style', originalRootStyle);
+        }
+      }
     };
   }, []);
 
@@ -52,6 +62,7 @@ function App() {
       filter: 'drop-shadow(0 0 5px rgba(99, 99, 99, 0.2))',
       minHeight: '100%',
       padding: '2%',
+      clipPath: 'polygon(0 0, 100% 0, 100% 93.5%, 87% 100%, 0 100%)'
     }}>
       <div style={{
         position: 'relative',

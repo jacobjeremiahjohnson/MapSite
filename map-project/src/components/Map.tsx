@@ -12,10 +12,6 @@ export default function Map({ width, height, trigger }: { width?: number; height
 
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  const drawMap = (data: any) => {
-    
-  }
-
   const paths = useMemo(() => {
     if (!width || !height) {
       return [];
@@ -57,17 +53,20 @@ export default function Map({ width, height, trigger }: { width?: number; height
     });
   }, [width, height]);
 
-  window.addEventListener('resize', () => drawMap(geoData));
-
-
   return (
-    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} style={{ width: '100%', height: '100%' }}>
+    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} style={{
+        width: '100%', 
+        height: '100%',
+        transform: trigger ? 'scaleX(-1)' : 'scaleX(1)',
+        transition: 'transform 0.5s ease-in-out',
+        }}
+      >
       <g>
         {paths.map((pathItem) => (
           <path
             key={pathItem.id}
             d={pathItem.d}
-            fill='lightgray'
+            fill='none'
             stroke='black'
             strokeWidth='0.3'
           />
