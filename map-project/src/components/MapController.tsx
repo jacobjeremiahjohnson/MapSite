@@ -5,10 +5,9 @@ import DraggableContainer from './DraggableContainer';
 
 const MapComponent = Map as ComponentType<{ width?: number; height?: number; trigger?: boolean }>;
 
-export default function MapController() {
+export default function MapController({ trigger, setTrigger }: { trigger: boolean; setTrigger: (trigger: boolean) => void }) {
     const [text, setText] = useState('');
     const dropZoneRef = useRef<HTMLDivElement | null>(null);
-    const [trigger, setTrigger] = useState(false);
     const [score, setScore] = useState(0);
 
     const {width, height} = useMemo(() => {
@@ -41,6 +40,7 @@ export default function MapController() {
       maxWidth: '100%',
       padding: '2%',
       border: '2px solid black',
+      backfaceVisibility: 'hidden',
     }}>
       <DraggableContainer setScore={setScore} setTrigger={setTrigger} width={width} height={height} trigger={trigger} />
       <MapComponent width={width} height={height} trigger={trigger} />

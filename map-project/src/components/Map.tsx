@@ -47,6 +47,7 @@ export default function Map({ width, height, trigger }: { width?: number; height
       return {
         id: index,
         name: city.name,
+        pop: city.population,
         x,
         y,
       };
@@ -57,11 +58,15 @@ export default function Map({ width, height, trigger }: { width?: number; height
     <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} style={{
         width: '100%', 
         height: '100%',
-        transform: trigger ? 'scaleX(-1)' : 'scaleX(1)',
-        transition: 'transform 0.5s ease-in-out',
         }}
       >
-      <g>
+      <filter id="print-texture" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <g style = {{
+        //transform: trigger ? `translate(${width}px, 0) scaleX(-1)` : 'translate(0, 0) scaleX(1)', 
+      }}>
         {paths.map((pathItem) => (
           <path
             key={pathItem.id}
@@ -69,20 +74,40 @@ export default function Map({ width, height, trigger }: { width?: number; height
             fill='none'
             stroke='black'
             strokeWidth='0.3'
+            filter='url(#print-texture)'
           />
+      ))}
+        </g>
+        {trigger && cityMarkers.map((city, index) => (
+          <g>
+            <circle
+              onMouseOver={() => console.log(`City: ${city.name}`)}
+              key={city.id}
+              cx={city.x}
+              cy={city.y}
+              style={{
+                // transform: trigger ? `translate(${width}px, 0) scaleX(-1)` : 'translate(0, 0) scaleX(1)',
+              }}
+              r={Math.round(1 + ((city.pop - 1000) / 69000) * 2) * 0.2}
+              fill="light-red"
+            />
+            {city.pop > 10000 && <text
+              x={city.x}
+              textAnchor="start"
+              fontSize="2"
+              fontFamily="Calibri"
+              y={city.y - 0.5}
+              fill="black"
+              style={{
+                transform: trigger ? `scaleX(-1)` : 'scaleX(1)',
+                transformOrigin: `center`,
+                transformBox: 'fill-box',
+              }}
+            >
+              {city.name}
+            </text>}
+          </g>
         ))}
-        {trigger && cityMarkers.map((city) => (
-          <circle
-            onMouseOver={() => console.log(`City: ${city.name}`)}
-            key={city.id}
-            cx={city.x}
-            cy={city.y}
-
-            r="3"
-            fill="red"
-          />
-        ))}
-      </g>
     </svg>
   );
 }

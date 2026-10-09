@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import geoData from '../assets/DEGeo.json';
 import testData from '../assets/DE_cities.json';
 import cornerImg from '../assets/pngtree-vector-effect-of-curled-page-corner-and-angled-white-sticker-with-blank-space-vector-png-image_30402186.png';
+import boxImg from '../assets/box.png';
 import clue from '../assets/clue.png';
 import type { DraggableData } from 'react-rnd';
 
@@ -35,6 +36,7 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
     const [position, setPosition] = useState({ x: 15, y: 15 });
     const [children, setChildren] = useState<Child[]>([]);
     const [childrenCount, setChildrenCount] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
     const parentRef = useRef<HTMLButtonElement | null>(null);
     const [relativePos, setRelativePos] = useState({ x: 0, y: 0 });
 
@@ -46,6 +48,7 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
     };
 
     const handleDragStop = (e: DragStopEvent, d: DraggableData, id: number): void => {
+        setIsDragging(false);
         setChildren(prev => prev.map(child =>
             child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
         ))
@@ -70,10 +73,11 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
 
     const handleDragStart = (e: DragStopEvent, d: DraggableData): void => {
         console.log('Drag started at:', d.x, d.y);
+        setIsDragging(true);
     };
 
     const handleClick = () => {
-        setChildren(prev => [...prev, { id: childrenCount, position: relativePos, text: '' }]);
+        setChildren(prev => [...prev, { id: childrenCount, position: {x: relativePos.x - 25, y: relativePos.y - 25}, text: '' }]);
         setChildrenCount(prev => prev + 1);
     }
 
@@ -91,7 +95,7 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
     useEffect(() => {
         for (const child of children) {
             const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
-            const geoCoords = projection.invert?.([child.position.x, child.position.y]);
+            const geoCoords = projection.invert?.([child.position.x, child.position.y - 50]); // Adjust for the height of the pin image
             let score = 0;
             for (const city of testData) {
                 if (geoCoords && city.latitude && city.longitude) {
@@ -113,7 +117,7 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
             onClick={handleClick}
             onMouseMove={handleMouseMove}
             style={{
-                background: 'brown',
+                background: 'transparent',
                 color: 'inherit',
                 border: 'none',
                 padding: 0,
@@ -123,12 +127,17 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
                 outline: 'inherit',
                 appearance: 'none',
                 width: '20%',
-                height: '20%',
+                height: '30%',
                 position: 'absolute',
                 zIndex: 0,
                 textAlign: 'center',
+                visibility: trigger ? 'hidden' : 'visible',
             }}
         >
+            <img src={boxImg} style={{
+                width: '100%',
+                height: '100%',
+            }}/>
             {children.map((child) => (
                 <Draggable 
                     key={child.id}
@@ -137,13 +146,38 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
                     onDragStart={handleDragStart}
                     id={child.id}
                     setChildren={setChildren}
+                    trigger={trigger}
                 />
             ))}
         </button>
-        <img src={clue} alt="Clue" style={{ position: 'absolute', zIndex: 1, bottom: 20, right: 15, width: '25%', height: '20%', background: 'transparent', border: 'none'}} />
-        {rootElement && createPortal(<button
+        <img src={clue} alt="Clue" style={{ 
+                position: 'absolute', 
+                zIndex: 1, 
+                bottom: 20, 
+                right: 15, 
+                width: '25%', 
+                height: '20%', 
+                background: 'transparent', 
+                border: 'none',
+                visibility: trigger ? 'hidden' : 'visible',
+            }} />
+        {rootElement && createPortal(
+        <button
             onClick={handleCheckButtonClick}
-            style={{ position: 'absolute', zIndex: 1, bottom: 0, right: -5, width: '20%', height: '10%', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            style={{ 
+                position: 'absolute', 
+                zIndex: 1, 
+                bottom: 0, 
+                right: trigger ? 'auto' : -5, 
+                left: trigger ? 3 : 'auto',
+                width: '20%', 
+                height: '10%', 
+                background: 'transparent', 
+                border: 'none', 
+                cursor: 'pointer',
+                transform: trigger ? 'rotateY(180deg)' : 'none',
+                transition: 'transform 0.2s ease',
+            }}
         >
             <img src={cornerImg} alt="Check" style={{ width: '100%', height: '100%' }} />
         </button>, rootElement)}

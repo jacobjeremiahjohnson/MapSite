@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import MapController from './components/MapController';
 
 function App() {
+
+  const [trigger, setTrigger] = useState(false);
+
   useEffect(() => {
     const body = document.body;
     const originalStyle = body.getAttribute('style');
@@ -58,11 +61,17 @@ function App() {
 
   return (
     <div style={{
-      backgroundImage: `url("${new URL('./assets/paperboard-carton-surface-beige-plain.jpg', import.meta.url)}")`,
+      backgroundImage: `url("${new URL('./assets/white-texture_1160-786.avif', import.meta.url)}")`,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: 'cover',
       filter: 'drop-shadow(0 0 5px rgba(99, 99, 99, 0.2))',
       minHeight: '100%',
       padding: '2%',
-      clipPath: 'polygon(0 0, 100% 0, 100% 93.5%, 87% 100%, 0 100%)'
+      clipPath: 'polygon(0 0, 100% 0, 100% 93.5%, 87% 100%, 0 100%)',
+      perspective: '1000px',
+      transformStyle: 'preserve-3d',
+      transform: trigger ? 'rotateY(180deg)' : 'none',
+      transition: 'transform 0.2s ease',
     }}>
       <div style={{
         position: 'relative',
@@ -76,11 +85,12 @@ function App() {
       }}>
         <div style={{
           fontSize: '6rem',
+          visibility: !trigger ? 'visible' : 'hidden',
           fontWeight: 'bold',
           width: '100%',
           textAlign: 'center',
         }}>Delaware Map</div>
-        <MapController />
+        <MapController trigger={trigger} setTrigger={setTrigger} />
       </div>
     </div>
   )
