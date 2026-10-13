@@ -8,6 +8,7 @@ import cornerImg from '../assets/pngtree-vector-effect-of-curled-page-corner-and
 import boxImg from '../assets/box.png';
 import clue from '../assets/clue.png';
 import type { DraggableData } from 'react-rnd';
+import '../App.css';
 
 interface DraggableContainerProps {
     width: number;
@@ -39,13 +40,41 @@ export default function DraggableContainer({ width, height, setTrigger, children
     const [childrenCount, setChildrenCount] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const parentRef = useRef<HTMLButtonElement | null>(null);
-    const [relativePos, setRelativePos] = useState({ x: 0, y: 0 });
+    const pendingDragRef = useRef<{
+        id: number;
+        startX: number;
+        startY: number;
+        startPosX: number;
+        startPosY: number;
+    } | null>(null);    
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (e.button !== 0) return;
+
         const bounds = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - bounds.left;
-        const y = e.clientY - bounds.top;
-        setRelativePos({ x, y });
+        const id = childrenCount;
+
+        const startPosX = e.clientX - bounds.left - 25;
+        const startPosY = e.clientY - bounds.top - 25;
+
+        pendingDragRef.current = {
+            id,
+            startX: e.clientX,
+            startY: e.clientY,
+            startPosX,
+            startPosY,
+        };
+
+        setChildren(prev => [
+            ...prev,
+            {
+                id,
+                position: { x: startPosX, y: startPosY },
+                text: '',
+            },
+        ]);
+
+        setChildrenCount(prev => prev + 1);
     };
 
     const handleDragStop = (e: DragStopEvent, d: DraggableData, id: number): void => {
@@ -77,11 +106,6 @@ export default function DraggableContainer({ width, height, setTrigger, children
         setIsDragging(true);
     };
 
-    const handleClick = () => {
-        setChildren(prev => [...prev, { id: childrenCount, position: {x: relativePos.x - 25, y: relativePos.y - 25}, text: '' }]);
-        setChildrenCount(prev => prev + 1);
-    }
-
     const handleCheckButtonClick = () => {
         setTrigger(!trigger);
     }
@@ -101,19 +125,54 @@ export default function DraggableContainer({ width, height, setTrigger, children
             for (const city of testData) {
                 if (geoCoords && city.latitude && city.longitude && city.name.toLowerCase() === child.text.toLowerCase()) {
                     const distance = Math.sqrt(Math.pow(geoCoords[0] - Number(city.longitude), 2) + Math.pow(geoCoords[1] - Number(city.latitude), 2));
-                    score = score + (1 - distance);
+                    score = score + (100 - distance);
                 }
             }
             setScore(score);
         }
     }, [trigger]);
 
+    useEffect(() => {
+        const handleMove = (e: MouseEvent) => {
+            const pending = pendingDragRef.current;
+            if (!pending) return;
+
+            const dx = e.clientX - pending.startX;
+            const dy = e.clientY - pending.startY;
+
+            setChildren(prev =>
+                prev.map(child =>
+                    child.id === pending.id
+                        ? {
+                            ...child,
+                            position: {
+                                x: pending.startPosX + dx,
+                                y: pending.startPosY + dy,
+                            },
+                        }
+                        : child
+                )
+            );
+        };
+
+        const handleUp = () => {
+            pendingDragRef.current = null;
+        };
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleUp);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('mouseup', handleUp);
+        };
+    }, [setChildren]);
+
     return (
     <div>
         <button
             ref={parentRef}
-            onClick={handleClick}
-            onMouseMove={handleMouseMove}
+            onMouseDown={handleMouseDown}
             onKeyDown={(e) => {
                 if (e.key === ' ' || e.key === 'Spacebar') {
                     e.preventDefault();
@@ -130,14 +189,15 @@ export default function DraggableContainer({ width, height, setTrigger, children
                 outline: 'inherit',
                 appearance: 'none',
                 width: '20%',
-                height: '30%',
+                height: 'auto',
                 position: 'absolute',
-                zIndex: 0,
+                left: '0px',
+                top: '-0px',
                 textAlign: 'center',
                 visibility: trigger ? 'hidden' : 'visible',
             }}
         >
-            <img src={boxImg} style={{
+            <img src={boxImg} className="no-drag" style={{
                 width: '100%',
                 height: '100%',
             }}/>

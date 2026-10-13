@@ -1,0 +1,13 @@
+  .no-drag {
+    -webkit-user-drag: none; /* Safari and Chrome */
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;         /* Standard syntax */
+    
+    /* Optional: Prevents the user from selecting the image */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }

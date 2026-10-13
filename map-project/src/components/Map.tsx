@@ -95,7 +95,7 @@ export default function Map({ width, height, children, trigger }: { width?: numb
               r={Math.round(1 + ((city.pop - 1000) / 69000) * 2) * 0.2}
               fill="light-red"
             />
-            {city.pop > 10000 && <text
+            <text
               x={city.x}
               textAnchor="start"
               fontSize="2"
@@ -109,7 +109,7 @@ export default function Map({ width, height, children, trigger }: { width?: numb
               }}
             >
               {city.name}
-            </text>}
+            </text>
           </g>
         )}
           }

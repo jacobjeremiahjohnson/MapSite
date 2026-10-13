@@ -38,7 +38,9 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
         style={{
           visibility: trigger ? 'visible' : 'visible'
         }}
-        onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()} // Prevent click event from propagating to parent
+        onMouseDown={(e) => {
+          e.stopPropagation();
+        }}
     >
       <div style={{
         display: 'flex',

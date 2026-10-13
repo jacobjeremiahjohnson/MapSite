@@ -49,6 +49,7 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
         fontSize: '1.5rem',
         fontWeight: 'bold',
         position: 'absolute',
+        transform: trigger ? `scaleX(-1)` : 'scaleX(1)',
       }}>Score: {score}</div>}
     </div>
 )};
