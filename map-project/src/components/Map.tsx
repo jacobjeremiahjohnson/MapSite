@@ -8,7 +8,7 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function Map({ width, height, trigger }: { width?: number; height?: number, trigger?: boolean }) {
+export default function Map({ width, height, children, trigger }: { width?: number; height?: number, children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }) {
 
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -78,7 +78,11 @@ export default function Map({ width, height, trigger }: { width?: number; height
           />
       ))}
         </g>
-        {trigger && cityMarkers.map((city, index) => (
+        {trigger && children?.map((child) => {
+          
+          for (const city of cityMarkers) {
+            if (city.name.toLowerCase() === child.text.toLowerCase()) {
+              return (
           <g>
             <circle
               onMouseOver={() => console.log(`City: ${city.name}`)}
@@ -107,7 +111,11 @@ export default function Map({ width, height, trigger }: { width?: number; height
               {city.name}
             </text>}
           </g>
-        ))}
+        )}
+          }
+
+          return null;
+        })}
     </svg>
   );
 }

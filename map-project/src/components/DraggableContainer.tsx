@@ -13,6 +13,8 @@ interface DraggableContainerProps {
     width: number;
     height: number;
     setTrigger: (trigger: boolean) => void;
+    children: { id: number; position: { x: number; y: number }; text: string }[];
+    setChildren: React.Dispatch<React.SetStateAction<{ id: number; position: { x: number; y: number }; text: string }[]>>;
     setScore: (score: number) => void;
     trigger: boolean;
 }
@@ -32,9 +34,8 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function DraggableContainer({ width, height, setTrigger, trigger, setScore }: DraggableContainerProps) {
+export default function DraggableContainer({ width, height, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
     const [position, setPosition] = useState({ x: 15, y: 15 });
-    const [children, setChildren] = useState<Child[]>([]);
     const [childrenCount, setChildrenCount] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const parentRef = useRef<HTMLButtonElement | null>(null);
@@ -98,12 +99,9 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
             const geoCoords = projection.invert?.([child.position.x, child.position.y - 50]); // Adjust for the height of the pin image
             let score = 0;
             for (const city of testData) {
-                if (geoCoords && city.latitude && city.longitude) {
+                if (geoCoords && city.latitude && city.longitude && city.name.toLowerCase() === child.text.toLowerCase()) {
                     const distance = Math.sqrt(Math.pow(geoCoords[0] - Number(city.longitude), 2) + Math.pow(geoCoords[1] - Number(city.latitude), 2));
-                    if (distance < 0.05) { // Adjust the threshold as needed
-                        console.log(`Child ID: ${child.id} is near city: ${city.name}`);
-                        score = score + (1 - distance);
-                    }
+                    score = score + (1 - distance);
                 }
             }
             setScore(score);
@@ -116,6 +114,11 @@ export default function DraggableContainer({ width, height, setTrigger, trigger,
             ref={parentRef}
             onClick={handleClick}
             onMouseMove={handleMouseMove}
+            onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                }
+            }}
             style={{
                 background: 'transparent',
                 color: 'inherit',
