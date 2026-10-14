@@ -34,6 +34,7 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
         onDragStop={onDragStop}
         onDragStart={onDragStart}
         enableResizing={false}
+        disableDragging={trigger}
         className="draggable-pin"
         style={{
           visibility: trigger ? 'visible' : 'visible'
@@ -52,6 +53,7 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
         <img src={trigger ? holeImg : pinImg} alt="Pin" draggable='false' style={{ 
           width: trigger ? '25px' : '50px', 
           height: trigger ? '25px' : '50px',
+          zIndex: 100,
           transform: trigger ? 'translateY(30px)' : 'translateY(0px)',
         }} />
         {!trigger && <input 
@@ -66,6 +68,7 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
             width: '200px',
             textAlign: 'left',
             color: 'grey',
+            zIndex: 99,
           }}
         />}
       </div>

@@ -16,7 +16,7 @@ interface DraggableContainerProps {
     setTrigger: (trigger: boolean) => void;
     children: { id: number; position: { x: number; y: number }; text: string }[];
     setChildren: React.Dispatch<React.SetStateAction<{ id: number; position: { x: number; y: number }; text: string }[]>>;
-    setScore: (score: number) => void;
+    setScore: React.Dispatch<React.SetStateAction<{ score: number; distance: number; name: string }[]>>;
     trigger: boolean;
 }
 
@@ -108,6 +108,9 @@ export default function DraggableContainer({ width, height, setTrigger, children
 
     const handleCheckButtonClick = () => {
         setTrigger(!trigger);
+        if (!trigger) {
+            setScore([]);
+        }
     }
     const rootElement = document.getElementById('root');
 
@@ -118,17 +121,45 @@ export default function DraggableContainer({ width, height, setTrigger, children
     }, [position]);
 
     useEffect(() => {
+        function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+            const toRadians = (degrees: number) => degrees * Math.PI / 180;
+            const earthRadiusKm = 6371.0088;
+
+            const dLat = toRadians(lat2 - lat1);
+            const dLon = toRadians(lon2 - lon1);
+
+            const a =
+                Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRadians(lat1)) *
+                Math.cos(toRadians(lat2)) *
+                Math.sin(dLon / 2) ** 2;
+
+            const clampedA = Math.min(1, Math.max(0, a));
+
+            return 2 * earthRadiusKm *
+                Math.atan2(
+                Math.sqrt(clampedA),
+                Math.sqrt(1 - clampedA)
+                );
+        }
+
         for (const child of children) {
             const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
-            const geoCoords = projection.invert?.([child.position.x, child.position.y - 50]); // Adjust for the height of the pin image
+            const [pinLongitude, pinLatitude] = projection.invert?.([child.position.x, child.position.y - 50]) || [0, 0]; // Adjust for the height of the pin image
             let score = 0;
+            let distance = 0;
             for (const city of testData) {
-                if (geoCoords && city.latitude && city.longitude && city.name.toLowerCase() === child.text.toLowerCase()) {
-                    const distance = Math.sqrt(Math.pow(geoCoords[0] - Number(city.longitude), 2) + Math.pow(geoCoords[1] - Number(city.latitude), 2));
-                    score = score + (100 - distance);
-                }
+                if (pinLongitude && pinLatitude && city.latitude && city.longitude && city.name.toLowerCase() === child.text.toLowerCase()) {
+                    distance = haversineDistance(pinLatitude, pinLongitude, Number(city.latitude), Number(city.longitude));
+                    console.log(`Child: ${child.text}, Distance: ${distance} km`);
+                    score = Math.round(100 * Math.max(0, 1 - distance / 150)); // Score decreases with distance, max distance 150 km
+                } 
             }
-            setScore(score);
+            if (score == 0) {
+                score = -100;
+                distance = 0;
+            }
+            setScore(prev => [...prev, { score: Math.round(score), distance: distance, name: child.text }]);
         }
     }, [trigger]);
 
@@ -192,7 +223,7 @@ export default function DraggableContainer({ width, height, setTrigger, children
                 height: 'auto',
                 position: 'absolute',
                 left: '0px',
-                top: '-0px',
+                bottom: '-0px',
                 textAlign: 'center',
                 visibility: trigger ? 'hidden' : 'visible',
             }}

@@ -89,7 +89,7 @@ function App() {
           fontWeight: 'bold',
           width: '100%',
           textAlign: 'center',
-        }}>Delaware Map</div>
+        }}>Dela-Where?</div>
         <MapController trigger={trigger} setTrigger={setTrigger} />
       </div>
     </div>

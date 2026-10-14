@@ -1,6 +1,6 @@
 import Map from './Map';
 import { useState, useRef, useEffect, useMemo, type ComponentType } from 'react';
-import geoData from '../assets/DEGeo.json';
+import ScoreSheet from './ScoreSheet';
 import DraggableContainer from './DraggableContainer';
 
 const MapComponent = Map as ComponentType<{ width?: number; height?: number; children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }>;
@@ -9,7 +9,7 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
     const [text, setText] = useState('');
     const dropZoneRef = useRef<HTMLDivElement | null>(null);
     const [children, setChildren] = useState<{ id: number; position: { x: number; y: number }; text: string }[]>([]);
-    const [score, setScore] = useState(0);
+    const [score, setScore] = useState<{ score: number; distance: number; name: string }[]>([]);
 
     const {width, height} = useMemo(() => {
       return {
@@ -29,10 +29,6 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
       
           load();
     }, []);
-    
-    useEffect(() => {
-      
-    }, [score]);
 
     return (
     <div ref={dropZoneRef} style={{
@@ -45,11 +41,6 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
     }}>
       <DraggableContainer setScore={setScore} setTrigger={setTrigger} children={children} setChildren={setChildren} width={width} height={height} trigger={trigger} />
       <MapComponent width={width} height={height} children={children} trigger={trigger} />
-      {trigger && <div style={{
-        fontSize: '1.5rem',
-        fontWeight: 'bold',
-        position: 'absolute',
-        transform: trigger ? `scaleX(-1)` : 'scaleX(1)',
-      }}>Score: {score}</div>}
+      {trigger && <ScoreSheet score={score} trigger={trigger} />}
     </div>
 )};

@@ -60,6 +60,11 @@ export default function Map({ width, height, children, trigger }: { width?: numb
         height: '100%',
         }}
       >
+      {!trigger && <text x='-10' y='10' textAnchor="middle" fontSize="4" fontFamily="CartoonFont" fill="black">
+        <tspan x="-10" dy="0">Stick pins in Delaware</tspan>
+        <tspan x="-10" dy="1.2em">Write city names</tspan>
+        <tspan x="-10" dy="1.2em">Record your score!</tspan>
+      </text>}
       <filter id="print-texture" x="-10%" y="-10%" width="120%" height="120%">
         <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
         <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
