@@ -3,10 +3,11 @@ import { useState, useRef, useEffect, useMemo, type ComponentType } from 'react'
 import ScoreSheet from './ScoreSheet';
 import DraggableContainer from './DraggableContainer';
 
-const MapComponent = Map as ComponentType<{ width?: number; height?: number; children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }>;
+const MapComponent = Map as ComponentType<{ mapRef?: React.RefObject<SVGSVGElement | null>; width?: number; height?: number; children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }>;
 
 export default function MapController({ trigger, setTrigger }: { trigger: boolean; setTrigger: (trigger: boolean) => void }) {
     const [text, setText] = useState('');
+    const mapRef = useRef<SVGSVGElement | null>(null);
     const dropZoneRef = useRef<HTMLDivElement | null>(null);
     const [children, setChildren] = useState<{ id: number; position: { x: number; y: number }; text: string }[]>([]);
     const [score, setScore] = useState<{ score: number; distance: number; name: string }[]>([]);
@@ -39,8 +40,8 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
       border: '2px solid black',
       backfaceVisibility: 'hidden',
     }}>
-      <DraggableContainer setScore={setScore} setTrigger={setTrigger} children={children} setChildren={setChildren} width={width} height={height} trigger={trigger} />
-      <MapComponent width={width} height={height} children={children} trigger={trigger} />
+      <DraggableContainer mapRef={mapRef} setScore={setScore} setTrigger={setTrigger} children={children} setChildren={setChildren} width={width} height={height} trigger={trigger} />
+      <MapComponent mapRef={mapRef} width={width} height={height} children={children} trigger={trigger} />
       {trigger && <ScoreSheet score={score} trigger={trigger} />}
     </div>
 )};

@@ -8,9 +8,8 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function Map({ width, height, children, trigger }: { width?: number; height?: number, children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }) {
+export default function Map({ mapRef, width, height, children, trigger }: { mapRef?: import('react').Ref<SVGSVGElement>; width?: number; height?: number, children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }) {
 
-  const svgRef = useRef<SVGSVGElement | null>(null);
 
   const paths = useMemo(() => {
     if (!width || !height) {
@@ -55,7 +54,7 @@ export default function Map({ width, height, children, trigger }: { width?: numb
   }, [width, height]);
 
   return (
-    <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} style={{
+    <svg ref={mapRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} style={{
         width: '100%', 
         height: '100%',
         }}

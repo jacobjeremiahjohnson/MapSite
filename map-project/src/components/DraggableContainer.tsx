@@ -11,6 +11,7 @@ import type { DraggableData } from 'react-rnd';
 import '../App.css';
 
 interface DraggableContainerProps {
+    mapRef?: React.RefObject<SVGSVGElement | null>;
     width: number;
     height: number;
     setTrigger: (trigger: boolean) => void;
@@ -35,7 +36,7 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function DraggableContainer({ width, height, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
+export default function DraggableContainer({ mapRef, width, height, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
     const [position, setPosition] = useState({ x: 15, y: 15 });
     const [childrenCount, setChildrenCount] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
@@ -83,7 +84,7 @@ export default function DraggableContainer({ width, height, setTrigger, children
             child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
         ))
 
-        const parentBox = parentRef.current?.getBoundingClientRect();
+        const parentBox = parentRef?.current?.getBoundingClientRect();
 
         if (!parentBox) return;
 
@@ -120,48 +121,109 @@ export default function DraggableContainer({ width, height, setTrigger, children
       
     }, [position]);
 
+    const getCityViewportPosition = (
+        latitude: number,
+        longitude: number,
+        mapElement: SVGSVGElement
+    ): [number, number] | null => {
+        const bounds = mapElement.getBoundingClientRect();
+
+        const projection = d3.geoMercator().fitSize(
+            [bounds.width, bounds.height],
+            featureCollection as any
+        );
+
+        const projected = projection([longitude, latitude]);
+
+        if (!projected) return null;
+
+        return [
+            bounds.left + projected[0],
+            bounds.top + projected[1],
+        ];
+    };
+
+    const getChildViewportPosition = (
+        child: Child
+    ): [number, number] | null => {
+        const container = parentRef.current;
+
+        if (!container) return null;
+
+        const bounds = container.getBoundingClientRect();
+
+        return [
+            bounds.left + child.position.x + 10,
+            bounds.top + child.position.y + 45,
+        ];
+    };
+
     useEffect(() => {
-        function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-            const toRadians = (degrees: number) => degrees * Math.PI / 180;
-            const earthRadiusKm = 6371.0088;
 
-            const dLat = toRadians(lat2 - lat1);
-            const dLon = toRadians(lon2 - lon1);
+    if (!trigger) return;
+    const mapElement = mapRef?.current;
+    if (!mapElement) return;
+    
+    console.log('Calculating scores...');
 
-            const a =
-                Math.sin(dLat / 2) ** 2 +
-                Math.cos(toRadians(lat1)) *
-                Math.cos(toRadians(lat2)) *
-                Math.sin(dLon / 2) ** 2;
+    const projection = d3.geoMercator().fitSize(
+        [width, height],
+        featureCollection as any
+    );
 
-            const clampedA = Math.min(1, Math.max(0, a));
+    const newScores = children.map((child) => {
+        const city = testData.find(
+            (city) =>
+                city.name.toLowerCase() ===
+                child.text.trim().toLowerCase()
+        );
 
-            return 2 * earthRadiusKm *
-                Math.atan2(
-                Math.sqrt(clampedA),
-                Math.sqrt(1 - clampedA)
-                );
+        if (!city) {
+            return {
+                score: -100,
+                distance: 0,
+                name: child.text,
+            };
         }
 
-        for (const child of children) {
-            const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
-            const [pinLongitude, pinLatitude] = projection.invert?.([child.position.x, child.position.y - 50]) || [0, 0]; // Adjust for the height of the pin image
-            let score = 0;
-            let distance = 0;
-            for (const city of testData) {
-                if (pinLongitude && pinLatitude && city.latitude && city.longitude && city.name.toLowerCase() === child.text.toLowerCase()) {
-                    distance = haversineDistance(pinLatitude, pinLongitude, Number(city.latitude), Number(city.longitude));
-                    console.log(`Child: ${child.text}, Distance: ${distance} km`);
-                    score = Math.round(100 * Math.max(0, 1 - distance / 150)); // Score decreases with distance, max distance 150 km
-                } 
-            }
-            if (score == 0) {
-                score = -100;
-                distance = 0;
-            }
-            setScore(prev => [...prev, { score: Math.round(score), distance: distance, name: child.text }]);
+        const cityPosition = getCityViewportPosition(
+            Number(city.latitude),
+            Number(city.longitude),
+            mapElement
+        );
+
+        const childPosition = getChildViewportPosition(child);
+
+        if (!cityPosition || !childPosition) {
+            return {
+                score: -100,
+                distance: 0,
+                name: child.text,
+            };
         }
-    }, [trigger]);
+
+        console.log(`City: ${city.name}, Projected Point: ${cityPosition}`);
+        console.log(`Child: ${childPosition}`)
+
+         const distance = Math.hypot(
+            childPosition[0] - cityPosition[0],
+            childPosition[1] - cityPosition[1]
+        );
+
+        const score = Math.max(
+            0,
+            Math.round(100 * (1 - distance / 150))
+        );
+
+        return {
+            score,
+            distance,
+            name: child.text,
+        };
+    });
+
+    setScore(newScores);
+    }, [trigger, children, width, height, setScore]);
 
     useEffect(() => {
         const handleMove = (e: MouseEvent) => {
