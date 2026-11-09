@@ -1,12 +1,11 @@
 import Map from './Map';
-import { useState, useRef, useEffect, useMemo, type ComponentType } from 'react';
+import { useState, useRef, useMemo, type ComponentType } from 'react';
 import ScoreSheet from './ScoreSheet';
 import DraggableContainer from './DraggableContainer';
 
 const MapComponent = Map as ComponentType<{ mapRef?: React.RefObject<SVGSVGElement | null>; width?: number; height?: number; children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }>;
 
 export default function MapController({ trigger, setTrigger }: { trigger: boolean; setTrigger: (trigger: boolean) => void }) {
-    const [text, setText] = useState('');
     const mapRef = useRef<SVGSVGElement | null>(null);
     const dropZoneRef = useRef<HTMLDivElement | null>(null);
     const [children, setChildren] = useState<{ id: number; position: { x: number; y: number }; text: string }[]>([]);
@@ -18,18 +17,6 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
         height: parseInt(dropZoneRef.current?.style.height || '0'),
       };
     }, [dropZoneRef.current?.style.width, dropZoneRef.current?.style.height]);
-
-    useEffect(() => {    
-      const load = function(){
-        fetch( './DE_cities.csv' )
-            .then( response => response.text() )
-            .then( responseText => {
-                setText( responseText );
-            })
-          }
-      
-          load();
-    }, []);
 
     return (
     <div ref={dropZoneRef} style={{

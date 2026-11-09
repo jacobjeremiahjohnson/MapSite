@@ -12,6 +12,10 @@ function App() {
       .then(response => setUsers(response.data))
       .catch(error => console.error("Error fetching data:", error));
   }
+
+  function handleSignIn() {
+  }
+  
   useEffect(() => {
 
     awsFunction();
@@ -76,16 +80,26 @@ function App() {
     <div style={{
       width: '100%',
     }}>
-      <div style={{
-        position: 'absolute',
-        width: '10%',
-        height: '10%',
-        borderRadius: '50%',
-        backgroundColor: 'beige',
+      <div 
+      onClick={() => handleSignIn()}
+      style={{
+        position: 'fixed',
+        top: '0px',
+        right: '0px',
+        width: '400px',
+        height: '100px',
+        backgroundImage: `url("${new URL('./assets/white-texture_1160-786.avif', import.meta.url)}")`,
         textAlign: 'center',
-        verticalAlign: 'middle'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        filter: 'drop-shadow(0 0 5px rgba(99, 99, 99, 0.2))',
+        fontSize: '2rem',
+        fontFamily: 'serif',
+        color: 'black',
+        zIndex: 1,
       }}>
-      Log In
+      Sign In / Sign Up
       </div>
     </div>
     <div style={{

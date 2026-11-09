@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import geoData from '../assets/DEGeo.json';
 import testData from '../assets/DE_cities.json';
 import * as d3 from 'd3';

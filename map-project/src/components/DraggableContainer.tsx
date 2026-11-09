@@ -8,6 +8,7 @@ import cornerImg from '../assets/pngtree-vector-effect-of-curled-page-corner-and
 import boxImg from '../assets/box.png';
 import clue from '../assets/clue.png';
 import type { DraggableData } from 'react-rnd';
+import type { DraggableEvent } from 'react-draggable';
 import '../App.css';
 
 interface DraggableContainerProps {
@@ -70,19 +71,13 @@ const getLabelOffsets = (children: Child[], editingId: number | null): Map<numbe
     return offsets;
 };
 
-interface DragStopEvent {
-  type: string;
-}
-
 const featureCollection = {
   type: 'FeatureCollection',
   features: geoData,
 };
 
 export default function DraggableContainer({ mapRef, width, height, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
-    const [position, setPosition] = useState({ x: 15, y: 15 });
     const [childrenCount, setChildrenCount] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const parentRef = useRef<HTMLButtonElement | null>(null);
     const pendingDragRef = useRef<{
@@ -122,8 +117,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
         setChildrenCount(prev => prev + 1);
     };
 
-    const handleDragStop = (e: DragStopEvent, d: DraggableData, id: number): void => {
-        setIsDragging(false);
+    const handleDragStop = (_event: DraggableEvent, d: DraggableData, id: number): void => {
         setChildren(prev => prev.map(child =>
             child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
         ))
@@ -146,9 +140,8 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
         return;
     };
 
-    const handleDragStart = (e: DragStopEvent, d: DraggableData): void => {
+    const handleDragStart = (_event: DraggableEvent, d: DraggableData): void => {
         console.log('Drag started at:', d.x, d.y);
-        setIsDragging(true);
     };
 
     const handleCheckButtonClick = () => {
@@ -163,12 +156,6 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
         [children, editingId]
     );
     const rootElement = document.getElementById('root');
-
-    useEffect(() => {
-        const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
-        console.log(projection.invert?.([position.x, position.y])); // Log the geographic coordinates of the draggable's position
-      
-    }, [position]);
 
     const getCityViewportPosition = (
         latitude: number,
@@ -214,11 +201,6 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
     if (!mapElement) return;
     
     console.log('Calculating scores...');
-
-    const projection = d3.geoMercator().fitSize(
-        [width, height],
-        featureCollection as any
-    );
 
     const newScores = children.map((child) => {
         const city = testData.find(
@@ -352,7 +334,6 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
                     id={child.id}
                     setChildren={setChildren}
                     labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
-                    setEditingId={setEditingId}
                     trigger={trigger}
                 />
             ))}

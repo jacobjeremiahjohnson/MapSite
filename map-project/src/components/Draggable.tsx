@@ -15,11 +15,10 @@ interface DraggableProps {
     id: number;
     setChildren: React.Dispatch<React.SetStateAction<Child[]>>;
     labelOffset: { x: number; y: number };
-    setEditingId: React.Dispatch<React.SetStateAction<number | null>>;
     trigger?: boolean;
 }
 
-export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, setEditingId, trigger }: DraggableProps) {
+export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, trigger }: DraggableProps) {
 
   const [text, setText] = useState('');
 
