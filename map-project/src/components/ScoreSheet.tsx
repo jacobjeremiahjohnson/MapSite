@@ -22,11 +22,15 @@ export default function ScoreSheet({
     }
 
     console.log('ScoreSheet triggered with score:', score);
-    const total = score.reduce((total, item) => total + item.score, 0);
 
-    const lines = [...score.map(
-      (item) => `${item.name}          ${item.score}`
-    ), `Total      ${total}`];
+    // Remove duplicates based on name and calculate total score
+
+    const uniqueItems = [...new Map(score.map((item) => [item.name, item])).values()];
+    const total = uniqueItems.reduce((total, item) => total + item.score, 0);
+    const lines = [
+      ...uniqueItems.map((item) => `${item.name}          ${item.score}`),
+      `Total      ${total}`,
+    ];
 
     const fullText = lines.join('\n');
     let charIndex = 0;

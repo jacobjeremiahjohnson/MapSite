@@ -59,7 +59,7 @@ export default function Map({ mapRef, width, height, children, trigger }: { mapR
         height: '100%',
         }}
       >
-      {!trigger && <text x='-10' y='10' textAnchor="middle" fontSize="4" fontFamily="CartoonFont" fill="black">
+      {!trigger && <text x='-10' y='10' textAnchor="middle" fontSize="4" fontFamily="ComicSans" fill="black">
         <tspan x="-10" dy="0">Stick pins in Delaware</tspan>
         <tspan x="-10" dy="1.2em">Write city names</tspan>
         <tspan x="-10" dy="1.2em">Record your score!</tspan>

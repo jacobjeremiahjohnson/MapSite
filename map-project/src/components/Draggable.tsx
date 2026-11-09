@@ -4,7 +4,7 @@ import type { DraggableEvent } from 'react-draggable';
 import type { Child } from './DraggableContainer';
 import pinImg from '../assets/pin.webp';
 import holeImg from '../assets/white-paper-hole-with-pure-transparency-free-png.webp'
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type DragStopHandler = (event: DraggableEvent, data: DraggableData) => void;
 
@@ -14,10 +14,12 @@ interface DraggableProps {
     onDragStart: DragStopHandler;
     id: number;
     setChildren: React.Dispatch<React.SetStateAction<Child[]>>;
+    labelOffset: { x: number; y: number };
+    setEditingId: React.Dispatch<React.SetStateAction<number | null>>;
     trigger?: boolean;
 }
 
-export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, trigger }: DraggableProps) {
+export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, setEditingId, trigger }: DraggableProps) {
 
   const [text, setText] = useState('');
 
@@ -48,7 +50,9 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '0.2rem',
+        position: 'relative',
+        width: trigger ? '25px' : '50px',
+        height: trigger ? '25px' : '50px',
       }}>
         <img src={trigger ? holeImg : pinImg} alt="Pin" draggable='false' style={{ 
           width: trigger ? '25px' : '50px', 
@@ -63,6 +67,9 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
           onChange={handleChange} 
           style={{
             all: 'unset',
+            position: 'absolute',
+            left: `${labelOffset.x}px`,
+            top: `${labelOffset.y}px`,
             fontSize: '1.5rem',
             fontFamily: '"Comic Sans MS", "Comic Sans", cursive',
             width: '200px',

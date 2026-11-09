@@ -1,5 +1,5 @@
 import Draggable from './Draggable';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import * as d3 from 'd3';
 import geoData from '../assets/DEGeo.json';
@@ -27,6 +27,49 @@ type Child = {
     text: string;
 }
 
+type LabelOffset = { x: number; y: number };
+
+const LABEL_WIDTH = 200;
+const LABEL_HEIGHT = 34;
+const LABEL_GAP = 5;
+
+const labelsOverlap = (first: { x: number; y: number }, second: { x: number; y: number }) =>
+    first.x < second.x + LABEL_WIDTH &&
+    first.x + LABEL_WIDTH > second.x &&
+    first.y < second.y + LABEL_HEIGHT &&
+    first.y + LABEL_HEIGHT > second.y;
+
+const getLabelOffsets = (children: Child[], editingId: number | null): Map<number, LabelOffset> => {
+    const orderedChildren = [...children].sort((first, second) =>
+        Number(second.id === editingId) - Number(first.id === editingId)
+    );
+    const placed: Array<{ position: { x: number; y: number }; offset: LabelOffset }> = [];
+    const offsets = new Map<number, LabelOffset>();
+
+    for (const child of orderedChildren) {
+        const candidates: LabelOffset[] = [{ x: 55, y: 8 }];
+        if (child.id !== editingId) {
+            for (let row = 1; row <= children.length + 1; row++) {
+                for (const y of [8 + row * (LABEL_HEIGHT + LABEL_GAP), 8 - row * (LABEL_HEIGHT + LABEL_GAP)]) {
+                    candidates.push({ x: 55, y }, { x: -LABEL_WIDTH - LABEL_GAP, y });
+                }
+            }
+        }
+
+        const candidate = candidates.find(offset =>
+            !placed.some(label => labelsOverlap(
+                { x: child.position.x + offset.x, y: child.position.y + offset.y },
+                { x: label.position.x + label.offset.x, y: label.position.y + label.offset.y }
+            ))
+        ) ?? candidates[0];
+
+        offsets.set(child.id, candidate);
+        placed.push({ position: child.position, offset: candidate });
+    }
+
+    return offsets;
+};
+
 interface DragStopEvent {
   type: string;
 }
@@ -40,6 +83,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
     const [position, setPosition] = useState({ x: 15, y: 15 });
     const [childrenCount, setChildrenCount] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
     const parentRef = useRef<HTMLButtonElement | null>(null);
     const pendingDragRef = useRef<{
         id: number;
@@ -108,11 +152,16 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
     };
 
     const handleCheckButtonClick = () => {
+        setEditingId(null);
         setTrigger(!trigger);
         if (!trigger) {
             setScore([]);
         }
     }
+    const labelOffsets = useMemo(
+        () => getLabelOffsets(children, editingId),
+        [children, editingId]
+    );
     const rootElement = document.getElementById('root');
 
     useEffect(() => {
@@ -267,7 +316,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
             ref={parentRef}
             onMouseDown={handleMouseDown}
             onKeyDown={(e) => {
-                if (e.key === ' ' || e.key === 'Spacebar') {
+                if (e.target === e.currentTarget && (e.key === ' ' || e.key === 'Spacebar')) {
                     e.preventDefault();
                 }
             }}
@@ -302,6 +351,8 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
                     onDragStart={handleDragStart}
                     id={child.id}
                     setChildren={setChildren}
+                    labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
+                    setEditingId={setEditingId}
                     trigger={trigger}
                 />
             ))}
@@ -324,9 +375,9 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
                 position: 'absolute', 
                 zIndex: 1, 
                 bottom: 0, 
-                right: trigger ? 'auto' : -5, 
-                left: trigger ? 3 : 'auto',
-                width: '20%', 
+                right: trigger ? 'auto' : '6.6%', 
+                left: trigger ? '6.6%' : 'auto',
+                width: '18%', 
                 height: '10%', 
                 background: 'transparent', 
                 border: 'none', 
