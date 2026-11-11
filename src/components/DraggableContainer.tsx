@@ -144,7 +144,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
         setFocusedPinId(id);
     };
 
-    const handleDragStart = (_event: DraggableEvent, d: DraggableData): void => {
+    const handleDragStart = (_event: DraggableEvent, _d: DraggableData): void => {
         return; // No action needed on drag start for now
     };
 
