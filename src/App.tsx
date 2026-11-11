@@ -27,7 +27,7 @@ function App() {
     Object.assign(body.style, {
       fontFamily: "'CartoonFont', sans-serif",
       margin: '0',
-      backgroundImage: `url("${new URL('./assets/abstract-white-painted-wall-texture.jpg', import.meta.url)}")`,
+      backgroundImage: `url("${new URL('./assets/natural-light-brown-wood-grain-texture-close-up.jpg', import.meta.url)}")`,
       backgroundAttachment: 'fixed',
       backgroundRepeat: 'repeat',
       backgroundPosition: 'top left',
