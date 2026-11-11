@@ -1,12 +1,11 @@
 import Draggable from './Draggable';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { createRef, useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import * as d3 from 'd3';
 import geoData from '../assets/DEGeo.json';
 import testData from '../assets/DE_cities.json';
 import cornerImg from '../assets/pngtree-vector-effect-of-curled-page-corner-and-angled-white-sticker-with-blank-space-vector-png-image_30402186.png';
 import boxImg from '../assets/box.png';
-import clue from '../assets/clue.png';
 import type { DraggableData } from 'react-rnd';
 import type { DraggableEvent } from 'react-draggable';
 import '../App.css';
@@ -16,8 +15,8 @@ interface DraggableContainerProps {
     width: number;
     height: number;
     setTrigger: (trigger: boolean) => void;
-    children: { id: number; position: { x: number; y: number }; text: string }[];
-    setChildren: React.Dispatch<React.SetStateAction<{ id: number; position: { x: number; y: number }; text: string }[]>>;
+    children: Child[];
+    setChildren: React.Dispatch<React.SetStateAction<Child[]>>;
     setScore: React.Dispatch<React.SetStateAction<{ score: number; distance: number; name: string }[]>>;
     trigger: boolean;
 }
@@ -26,6 +25,7 @@ type Child = {
     id: number;
     position: { x: number; y: number };
     text: string;
+    textInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 type LabelOffset = { x: number; y: number };
@@ -79,7 +79,10 @@ const featureCollection = {
 export default function DraggableContainer({ mapRef, width, height, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
     const [childrenCount, setChildrenCount] = useState(0);
     const [editingId, setEditingId] = useState<number | null>(null);
+    const [focusedPinId, setFocusedPinId] = useState<number | null>(null);
+    const inputRefs = useRef<Map<number, React.RefObject<HTMLInputElement | null>>>(new Map());
     const parentRef = useRef<HTMLButtonElement | null>(null);
+
     const pendingDragRef = useRef<{
         id: number;
         startX: number;
@@ -118,10 +121,6 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
     };
 
     const handleDragStop = (_event: DraggableEvent, d: DraggableData, id: number): void => {
-        setChildren(prev => prev.map(child =>
-            child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
-        ))
-
         const parentBox = parentRef?.current?.getBoundingClientRect();
 
         if (!parentBox) return;
@@ -136,12 +135,17 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
             setChildren(prev =>
                 prev.filter(child => child.id !== id)
             );
+            return;
         }
-        return;
+
+        setChildren(prev => prev.map(child =>
+            child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
+        ));
+        setFocusedPinId(id);
     };
 
     const handleDragStart = (_event: DraggableEvent, d: DraggableData): void => {
-        console.log('Drag started at:', d.x, d.y);
+        return; // No action needed on drag start for now
     };
 
     const handleCheckButtonClick = () => {
@@ -156,6 +160,13 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
         [children, editingId]
     );
     const rootElement = document.getElementById('root');
+
+    useEffect(() => {
+        if (focusedPinId === null) return;
+
+        inputRefs.current.get(focusedPinId)?.current?.focus();
+        setFocusedPinId(null);
+    }, [focusedPinId]);
 
     const getCityViewportPosition = (
         latitude: number,
@@ -200,8 +211,6 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
     const mapElement = mapRef?.current;
     if (!mapElement) return;
     
-    console.log('Calculating scores...');
-
     const newScores = children.map((child) => {
         const city = testData.find(
             (city) =>
@@ -233,9 +242,6 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
             };
         }
 
-        console.log(`City: ${city.name}, Projected Point: ${cityPosition}`);
-        console.log(`Child: ${childPosition}`)
-
          const distance = Math.hypot(
             childPosition[0] - cityPosition[0],
             childPosition[1] - cityPosition[1]
@@ -257,6 +263,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
     }, [trigger, children, width, height, setScore]);
 
     useEffect(() => {
+        console.log("Terrorist detected")
         const handleMove = (e: MouseEvent) => {
             const pending = pendingDragRef.current;
             if (!pending) return;
@@ -277,10 +284,12 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
                         : child
                 )
             );
+            setFocusedPinId(pending.id);
         };
 
         const handleUp = () => {
             pendingDragRef.current = null;
+            setFocusedPinId(null);
         };
 
         window.addEventListener('mousemove', handleMove);
@@ -312,7 +321,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
                 cursor: 'pointer',
                 outline: 'inherit',
                 appearance: 'none',
-                width: '20%',
+                width: '15%',
                 height: 'auto',
                 position: 'absolute',
                 left: '0px',
@@ -323,10 +332,16 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
         >
             <img src={boxImg} className="no-drag" style={{
                 width: '100%',
-                height: '100%',
+                height: 'auto',
             }}/>
-            {children.map((child) => (
-                <Draggable 
+            {children.map((child) => {
+                let inputRef = inputRefs.current.get(child.id);
+                if (!inputRef) {
+                    inputRef = createRef<HTMLInputElement>();
+                    inputRefs.current.set(child.id, inputRef);
+                }
+
+                return <Draggable 
                     key={child.id}
                     position={child.position}
                     onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
@@ -335,20 +350,10 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
                     setChildren={setChildren}
                     labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
                     trigger={trigger}
+                    inputRef={inputRef}
                 />
-            ))}
+            })}
         </button>
-        <img src={clue} alt="Clue" style={{ 
-                position: 'absolute', 
-                zIndex: 1, 
-                bottom: 20, 
-                right: 15, 
-                width: '25%', 
-                height: '20%', 
-                background: 'transparent', 
-                border: 'none',
-                visibility: trigger ? 'hidden' : 'visible',
-            }} />
         {rootElement && createPortal(
         <button
             onClick={handleCheckButtonClick}
