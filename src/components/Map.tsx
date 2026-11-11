@@ -60,15 +60,20 @@ export default function Map({ mapRef, width, height, children, trigger }: { mapR
         height: '100%',
         }}
       >
-      {!trigger && <text x={8 * visualScale} y={8 * visualScale} textAnchor="start" fontSize={4 * visualScale} fontFamily="ComicSans" fill="black">
-        <tspan x={8 * visualScale} dy="0">Stick pins in Delaware</tspan>
-        <tspan x={8 * visualScale} dy="1.2em">Write city names</tspan>
-        <tspan x={8 * visualScale} dy="1.2em">Record your score!</tspan>
-      </text>}
       <filter id="print-texture" x="-10%" y="-10%" width="120%" height="120%">
         <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
         <feDisplacementMap in="SourceGraphic" in2="noise" scale={0.2 * visualScale} xChannelSelector="R" yChannelSelector="G" />
       </filter>
+      {!trigger && <text x={8 * visualScale} y={8 * visualScale} textAnchor="start" fontSize={4 * visualScale} fontFamily="cursive" fill="black" filter='url(#print-texture)'>
+        <tspan x={8 * visualScale} dy="0">Stick pins in Delaware</tspan>
+        <tspan x={8 * visualScale} dy="1.2em">Write city names</tspan>
+        <tspan x={8 * visualScale} dy="1.2em">Record your score!</tspan>
+      </text>}
+
+      {!trigger && <text x={40 * visualScale} y={20 * visualScale} fontSize={2 * visualScale} fontFamily="cursive" fill="black" filter='url(#print-texture)'>
+        <tspan x={8 * visualScale} dy="0">Flip page when done</tspan>
+      </text>}
+
       <g style = {{
         //transform: trigger ? `translate(${width}px, 0) scaleX(-1)` : 'translate(0, 0) scaleX(1)', 
       }}>

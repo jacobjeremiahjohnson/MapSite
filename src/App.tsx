@@ -18,7 +18,7 @@ function App() {
   
   useEffect(() => {
 
-    awsFunction();
+    //awsFunction();
     const body = document.body;
     const originalStyle = body.getAttribute('style');
     const root = document.getElementById('root');

@@ -16,10 +16,10 @@ interface DraggableProps {
     setChildren: React.Dispatch<React.SetStateAction<Child[]>>;
     labelOffset: { x: number; y: number };
     trigger?: boolean;
+    inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, trigger }: DraggableProps) {
-
+export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, trigger, inputRef }: DraggableProps) {
   const [text, setText] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +62,7 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
         {!trigger && <input 
           type="text"
           placeholder="Enter city name" 
+          ref={inputRef}
           value={text}
           onChange={handleChange} 
           style={{
