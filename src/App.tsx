@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
 import MapController from './components/MapController';
-import axios from 'axios';
+// import axios from 'axios';
 
 function App() {
 
   const [trigger, setTrigger] = useState(false);
-  const [users, setUsers] = useState({});
+  // const [users, setUsers] = useState({});
 
-  function awsFunction () {
-    axios.get('https://iow6swr5ug.execute-api.us-east-1.amazonaws.com/prod/users')
-      .then(response => setUsers(response.data))
-      .catch(error => console.error("Error fetching data:", error));
-  }
+  // function awsFunction () {
+  //   axios.get('https://iow6swr5ug.execute-api.us-east-1.amazonaws.com/prod/users')
+  //     .then(response => setUsers(response.data))
+  //     .catch(error => console.error("Error fetching data:", error));
+  // }
 
-  function handleSignIn() {
-  }
+  // function handleSignIn() {
+  //   return; // No action needed for now
+  // }
   
   useEffect(() => {
 
@@ -71,9 +72,9 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    console.log(users)
-  }, [users])
+  // useEffect(() => {
+  //   console.log(users)
+  // }, [users])
 
   return (
     <div>
