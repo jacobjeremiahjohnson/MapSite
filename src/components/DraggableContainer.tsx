@@ -321,7 +321,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
                 cursor: 'pointer',
                 outline: 'inherit',
                 appearance: 'none',
-                width: '20%',
+                width: '15%',
                 height: 'auto',
                 position: 'absolute',
                 left: '0px',
@@ -332,7 +332,7 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
         >
             <img src={boxImg} className="no-drag" style={{
                 width: '100%',
-                height: '100%',
+                height: 'auto',
             }}/>
             {children.map((child) => {
                 let inputRef = inputRefs.current.get(child.id);

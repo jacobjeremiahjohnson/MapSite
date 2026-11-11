@@ -29,9 +29,9 @@ function App() {
       margin: '0',
       backgroundImage: `url("${new URL('./assets/natural-light-brown-wood-grain-texture-close-up.jpg', import.meta.url)}")`,
       backgroundAttachment: 'fixed',
-      backgroundRepeat: 'repeat',
+      backgroundRepeat: 'no-repeat',
       backgroundPosition: 'top left',
-      backgroundSize: '800px',
+      backgroundSize: 'cover',
     });
     if (root) root.style.position = 'relative';
 
@@ -80,7 +80,7 @@ function App() {
     <div style={{
       width: '100%',
     }}>
-      <div 
+      {/* <div 
       onClick={() => handleSignIn()}
       style={{
         position: 'fixed',
@@ -100,7 +100,7 @@ function App() {
         zIndex: 1,
       }}>
       Sign In / Sign Up
-      </div>
+      </div> */}
     </div>
     <div style={{
       backgroundImage: `url("${new URL('./assets/white-texture_1160-786.avif', import.meta.url)}")`,
