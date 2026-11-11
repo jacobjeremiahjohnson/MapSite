@@ -3,7 +3,7 @@ import type { DraggableData } from 'react-rnd';
 import type { DraggableEvent } from 'react-draggable';
 import type { Child } from './DraggableContainer';
 import pinImg from '../assets/pin.webp';
-import holeImg from '../assets/white-paper-hole-with-pure-transparency-free-png.webp'
+import holeImg from '../assets/woodhole.png'
 import { useState } from 'react';
 
 type DragStopHandler = (event: DraggableEvent, data: DraggableData) => void;
@@ -70,7 +70,7 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
             left: `${labelOffset.x}px`,
             top: `${labelOffset.y}px`,
             fontSize: '1.5rem',
-            fontFamily: '"Comic Sans MS", "Comic Sans", cursive',
+            fontFamily: 'cursive',
             width: '200px',
             textAlign: 'left',
             color: 'grey',
