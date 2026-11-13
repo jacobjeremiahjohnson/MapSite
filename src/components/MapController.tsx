@@ -14,7 +14,7 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
     const [size, setSize] = useState({ width: 0, height: 0 });
     const [testData, setTestData] = useState<{ name: string; latitude: number; longitude: number }[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    //const [error, setError] = useState<string | null>(null);
     
     useEffect(() => {
       const dropZone = dropZoneRef.current;
@@ -55,7 +55,7 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
           setTestData(formattedResponse);
         } catch (error) {
             console.error('Error fetching city coordinates:', error);
-            setError(error instanceof Error ? error.message : 'An unknown error occurred');
+            //setError(error instanceof Error ? error.message : 'An unknown error occurred');
         } finally {
             setLoading(false);
         }
