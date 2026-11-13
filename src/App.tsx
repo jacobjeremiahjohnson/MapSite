@@ -5,11 +5,11 @@ import MapController from './components/MapController';
 function App() {
 
   const [trigger, setTrigger] = useState(false);
-  // const [users, setUsers] = useState({});
+  // const [cities, setCities] = useState({});
 
-  // function awsFunction () {
-  //   axios.get('https://iow6swr5ug.execute-api.us-east-1.amazonaws.com/prod/users')
-  //     .then(response => setUsers(response.data))
+  // function awsFunction (state: string, cities: Array<string>) {
+  //   axios.get('https://iow6swr5ug.execute-api.us-east-1.amazonaws.com/prod/cities?state=DE')
+  //     .then(response => setCities(response.data))
   //     .catch(error => console.error("Error fetching data:", error));
   // }
 
@@ -19,7 +19,6 @@ function App() {
   
   useEffect(() => {
 
-    //awsFunction();
     const body = document.body;
     const originalStyle = body.getAttribute('style');
     const root = document.getElementById('root');
@@ -73,8 +72,8 @@ function App() {
   }, []);
 
   // useEffect(() => {
-  //   console.log(users)
-  // }, [users])
+  //   console.log(cities);
+  // }, [cities]);
 
   return (
     <div>

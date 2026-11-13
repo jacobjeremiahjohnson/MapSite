@@ -1062,6 +1062,15 @@ form-data@^4.0.6:
     hasown "^2.0.4"
     mime-types "^2.1.35"
 
+framer-motion@14.13.0:
+  version "14.13.0"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-14.13.0.tgz#6ca9b9867a9a305db0be3c55d388d5edca1c8634"
+  integrity sha512-62FgGVeqEI3pgI5jG/d6yagg/hX9z7Vw3ytE0gGAsDXWBBruUCr74b5LQJXMSF1E62Zp7HKO88nDu/hhUdRSCQ==
+  dependencies:
+    motion-dom "14.13.0"
+    motion-utils "14.7.0"
+    tslib "^2.4.0"
+
 fsevents@~2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.3.tgz#cac6407785d03675a2a5e1a5305c697b347d90d6"
@@ -1265,6 +1274,26 @@ mime-types@^2.1.35:
   dependencies:
     mime-db "1.52.0"
 
+motion-dom@14.13.0:
+  version "14.13.0"
+  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-14.13.0.tgz#54a070fe06718182d5d1ea4a043593a762da5961"
+  integrity sha512-nWrB6Psw7mFTBNL9r5hw9nm/a5+21WZ1LymOml/V2b43LdiIDO1oi+oBMSR3bcyuzEQKJoaa+t5qnsCWYhcNvA==
+  dependencies:
+    motion-utils "14.7.0"
+
+motion-utils@14.7.0:
+  version "14.7.0"
+  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-14.7.0.tgz#8577b2fb176dcb2496812a8b314ba80b7d834c84"
+  integrity sha512-woO0/Nb7ys75f94fjvQi/6leiHGvZUYkeHUPEZ3vxsV+9OpEVhkxp01x8MlRwX0zt31EqgXsKDAoBoJLC148Tw==
+
+motion@^14.13.0:
+  version "14.13.0"
+  resolved "https://registry.yarnpkg.com/motion/-/motion-14.13.0.tgz#05467ced41a9af82972b851a57adcd0a14edf884"
+  integrity sha512-WFvmnDJ8h9b8QP9YeZ1KqjwbLdEnroYR3H0Gd6zyn14/olYruKBzeZcuivcgYdvmGWVoPe7YmfHVsy3ehQ2P0w==
+  dependencies:
+    framer-motion "14.13.0"
+    tslib "^2.4.0"
+
 ms@^2.1.3:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
@@ -1453,6 +1482,11 @@ tslib@2.6.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.6.2.tgz#703ac29425e7b37cd6fd456e92404d46d1f3e4ae"
   integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
+
+tslib@^2.4.0:
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.9.1.tgz#8986213ba2f17f38ba39a7c43d0e565a9134ff5f"
+  integrity sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==
 
 typescript@~6.0.2:
   version "6.0.3"

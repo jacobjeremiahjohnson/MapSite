@@ -8,6 +8,7 @@ import cornerImg from '../assets/pngtree-vector-effect-of-curled-page-corner-and
 import boxImg from '../assets/box.png';
 import type { DraggableData } from 'react-rnd';
 import type { DraggableEvent } from 'react-draggable';
+import { motion, AnimatePresence } from 'motion/react';
 import '../App.css';
 
 interface DraggableContainerProps {
@@ -303,57 +304,62 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
 
     return (
     <div>
-        <button
-            ref={parentRef}
-            onMouseDown={handleMouseDown}
-            onKeyDown={(e) => {
-                if (e.target === e.currentTarget && (e.key === ' ' || e.key === 'Spacebar')) {
-                    e.preventDefault();
-                }
-            }}
-            style={{
-                background: 'transparent',
-                color: 'inherit',
-                border: 'none',
-                padding: 0,
-                margin: 0,
-                font: 'inherit',
-                cursor: 'pointer',
-                outline: 'inherit',
-                appearance: 'none',
-                width: '15%',
-                height: 'auto',
-                position: 'absolute',
-                left: '0px',
-                bottom: '-0px',
-                textAlign: 'center',
-                visibility: trigger ? 'hidden' : 'visible',
-            }}
-        >
-            <img src={boxImg} className="no-drag" style={{
-                width: '100%',
-                height: 'auto',
-            }}/>
-            {children.map((child) => {
-                let inputRef = inputRefs.current.get(child.id);
-                if (!inputRef) {
-                    inputRef = createRef<HTMLInputElement>();
-                    inputRefs.current.set(child.id, inputRef);
-                }
+        <AnimatePresence>
+            {!trigger && <motion.button
+                initial={{ x: '-100%', opacity: 0 }} // Start off-screen to the left
+                animate={{ x: 0, opacity: 1 }}       // Slide into view
+                exit={{ x: '-100%', opacity: 0 }}    // Slide back out to the left
+                transition={{ duration: 5, ease: 'easeInOut' }}
+                ref={parentRef}
+                onMouseDown={handleMouseDown}
+                onKeyDown={(e) => {
+                    if (e.target === e.currentTarget && (e.key === ' ' || e.key === 'Spacebar')) {
+                        e.preventDefault();
+                    }
+                }}
+                style={{
+                    background: 'transparent',
+                    color: 'inherit',
+                    border: 'none',
+                    padding: 0,
+                    margin: 0,
+                    font: 'inherit',
+                    cursor: 'pointer',
+                    outline: 'inherit',
+                    appearance: 'none',
+                    width: '15%',
+                    height: 'auto',
+                    position: 'absolute',
+                    left: '0px',
+                    bottom: '-0px',
+                    textAlign: 'center',
+                }}
+            >
+                <img src={boxImg} className="no-drag" style={{
+                    width: '100%',
+                    height: 'auto',
+                }}/>
+                {children.map((child) => {
+                    let inputRef = inputRefs.current.get(child.id);
+                    if (!inputRef) {
+                        inputRef = createRef<HTMLInputElement>();
+                        inputRefs.current.set(child.id, inputRef);
+                    }
 
-                return <Draggable 
-                    key={child.id}
-                    position={child.position}
-                    onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
-                    onDragStart={handleDragStart}
-                    id={child.id}
-                    setChildren={setChildren}
-                    labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
-                    trigger={trigger}
-                    inputRef={inputRef}
-                />
-            })}
-        </button>
+                    return <Draggable 
+                        key={child.id}
+                        position={child.position}
+                        onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
+                        onDragStart={handleDragStart}
+                        id={child.id}
+                        setChildren={setChildren}
+                        labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
+                        trigger={trigger}
+                        inputRef={inputRef}
+                    />
+                })}
+            </motion.button>}
+        </AnimatePresence>
         {rootElement && createPortal(
         <button
             onClick={handleCheckButtonClick}
