@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import geoData from '../assets/DEGeo.json';
-import testData from '../assets/DE_cities.json';
 import * as d3 from 'd3';
+import CityMarkers from './CityMarkers';
 
 const featureCollection = {
   type: 'FeatureCollection',
   features: geoData,
 };
 
-export default function Map({ mapRef, width, height, children, trigger }: { mapRef?: import('react').Ref<SVGSVGElement>; width?: number; height?: number, children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }) {
+export default function Map({ mapRef, width, height, testData, children, trigger, isLoading }: { mapRef?: import('react').Ref<SVGSVGElement>; width?: number; height?: number, testData?: { name: string; latitude: number; longitude: number }[], isLoading: boolean, children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }) {
 
   const visualScale = width && height ? Math.min(width / 95, height / 80) : 1;
 
@@ -42,7 +42,7 @@ export default function Map({ mapRef, width, height, children, trigger }: { mapR
     }
 
     const projection = d3.geoMercator().fitSize([width, height], featureCollection as any);
-    return testData.map((city: any, index: number) => {
+    return (testData ?? []).map((city: any, index: number) => {
       const [x, y] = projection([city.longitude, city.latitude]) || [0, 0];
       return {
         id: index,
@@ -52,7 +52,7 @@ export default function Map({ mapRef, width, height, children, trigger }: { mapR
         y,
       };
     });
-  }, [width, height]);
+  }, [testData, width, height]);
 
   return (
     <svg ref={mapRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} style={{
@@ -88,44 +88,7 @@ export default function Map({ mapRef, width, height, children, trigger }: { mapR
           />
       ))}
         </g>
-        {trigger && children?.map((child) => {
-          
-          for (const city of cityMarkers) {
-            if (city.name.toLowerCase() === child.text.toLowerCase()) {
-              return (
-          <g>
-            <circle
-              onMouseOver={() => console.log(`City: ${city.name}`)}
-              key={city.id}
-              cx={city.x}
-              cy={city.y}
-              style={{
-                // transform: trigger ? `translate(${width}px, 0) scaleX(-1)` : 'translate(0, 0) scaleX(1)',
-              }}
-              r={Math.round(1 + ((city.pop - 1000) / 69000) * 2) * 0.2 * visualScale}
-              fill="light-red"
-            />
-            <text
-              x={city.x}
-              textAnchor="start"
-              fontSize={2 * visualScale}
-              fontFamily="Calibri"
-              y={city.y - 0.5 * visualScale}
-              fill="black"
-              style={{
-                transform: trigger ? `scaleX(-1)` : 'scaleX(1)',
-                transformOrigin: `center`,
-                transformBox: 'fill-box',
-              }}
-            >
-              {city.name}
-            </text>
-          </g>
-        )}
-          }
-
-          return null;
-        })}
+      <CityMarkers children={children} cityMarkers={cityMarkers} trigger={trigger} isLoading={isLoading} visualScale={visualScale} />
     </svg>
   );
 }

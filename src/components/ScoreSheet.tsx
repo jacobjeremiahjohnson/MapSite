@@ -9,9 +9,11 @@ type ScoreItem = {
 export default function ScoreSheet({
   score,
   trigger,
+  isLoading
 }: {
   score: ScoreItem[];
   trigger: boolean;
+  isLoading: boolean;
 }) {
   const [displayedText, setDisplayedText] = useState<string[]>([]);
 
@@ -20,8 +22,6 @@ export default function ScoreSheet({
       setDisplayedText([]);
       return;
     }
-
-    console.log('ScoreSheet triggered with score:', score);
 
     // Remove duplicates based on name and calculate total score
 
@@ -61,11 +61,13 @@ export default function ScoreSheet({
 
   }, [trigger, score]);
 
+  if (isLoading) return (null);
+
   return (
-    <div
-      style={{
-        fontSize: '1.5rem',
-        fontFamily: "'Comic Sans MS', 'Comic Sans', cursive",
+      <div
+        style={{
+          fontSize: '1.5rem',
+          fontFamily: "'Comic Sans MS', 'Comic Sans', cursive",
         fontWeight: 'bold',
         position: 'absolute',
         bottom: '10px',
@@ -84,7 +86,6 @@ export default function ScoreSheet({
       {displayedText.map((line, index) => {
 
         const isTotal = index === score.length;
-
         return(
         <div
           key={index}

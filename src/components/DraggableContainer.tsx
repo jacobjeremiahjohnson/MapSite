@@ -3,18 +3,17 @@ import { createRef, useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import * as d3 from 'd3';
 import geoData from '../assets/DEGeo.json';
-import testData from '../assets/DE_cities.json';
 import cornerImg from '../assets/pngtree-vector-effect-of-curled-page-corner-and-angled-white-sticker-with-blank-space-vector-png-image_30402186.png';
 import boxImg from '../assets/box.png';
 import type { DraggableData } from 'react-rnd';
 import type { DraggableEvent } from 'react-draggable';
-import { motion, AnimatePresence } from 'motion/react';
 import '../App.css';
 
 interface DraggableContainerProps {
     mapRef?: React.RefObject<SVGSVGElement | null>;
     width: number;
     height: number;
+    testData: { name: string; latitude: number; longitude: number }[];
     setTrigger: (trigger: boolean) => void;
     children: Child[];
     setChildren: React.Dispatch<React.SetStateAction<Child[]>>;
@@ -77,11 +76,12 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function DraggableContainer({ mapRef, width, height, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
+export default function DraggableContainer({ mapRef, width, height, testData, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
     const [childrenCount, setChildrenCount] = useState(0);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [focusedPinId, setFocusedPinId] = useState<number | null>(null);
     const inputRefs = useRef<Map<number, React.RefObject<HTMLInputElement | null>>>(new Map());
+    const pinRefs = useRef<Map<number, React.RefObject<HTMLImageElement | null>>>(new Map());
     const parentRef = useRef<HTMLButtonElement | null>(null);
 
     const pendingDragRef = useRef<{
@@ -172,12 +172,15 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
     const getCityViewportPosition = (
         latitude: number,
         longitude: number,
-        mapElement: SVGSVGElement
+        mapElement: SVGSVGElement,
+        mapWidth: number,
+        mapHeight: number
     ): [number, number] | null => {
-        const bounds = mapElement.getBoundingClientRect();
+        const screenMatrix = mapElement.getScreenCTM();
+        if (!screenMatrix || !mapWidth || !mapHeight) return null;
 
         const projection = d3.geoMercator().fitSize(
-            [bounds.width, bounds.height],
+            [mapWidth, mapHeight],
             featureCollection as any
         );
 
@@ -185,83 +188,82 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
 
         if (!projected) return null;
 
-        return [
-            bounds.left + projected[0],
-            bounds.top + projected[1],
-        ];
+        const viewportPosition = new DOMPoint(projected[0], projected[1]).matrixTransform(screenMatrix);
+        return [viewportPosition.x, viewportPosition.y];
     };
 
     const getChildViewportPosition = (
         child: Child
     ): [number, number] | null => {
-        const container = parentRef.current;
+        const pin = pinRefs.current.get(child.id)?.current;
+        if (!pin) return null;
 
-        if (!container) return null;
-
-        const bounds = container.getBoundingClientRect();
-
+        const bounds = pin.getBoundingClientRect();
         return [
-            bounds.left + child.position.x + 10,
-            bounds.top + child.position.y + 45,
+            bounds.left + bounds.width / 2,
+            bounds.top + bounds.height / 2,
         ];
     };
 
     useEffect(() => {
+        console.log('Calculating scores...');
+        if (!trigger || !testData?.length) return;
+        const mapElement = mapRef?.current;
+        if (!mapElement) return;
+        
+        const newScores = children.map((child) => {
+            const city = testData.find(
+                (city) =>
+                    city.name.toLowerCase() ===
+                    child.text.trim().toLowerCase()
+            );
 
-    if (!trigger) return;
-    const mapElement = mapRef?.current;
-    if (!mapElement) return;
-    
-    const newScores = children.map((child) => {
-        const city = testData.find(
-            (city) =>
-                city.name.toLowerCase() ===
-                child.text.trim().toLowerCase()
-        );
+            if (!city) {
+                console.log(`No matching city found for child: ${child.text}`);
+                return {
+                    score: -100,
+                    distance: 0,
+                    name: child.text,
+                };
+            }
 
-        if (!city) {
+            const cityPosition = getCityViewportPosition(
+                Number(city.latitude),
+                Number(city.longitude),
+                mapElement,
+                width,
+                height
+            );
+
+            const childPosition = getChildViewportPosition(child);
+            console.log(`Child: ${child.text}, City: ${city.name}, ChildPos: ${childPosition}, CityPos: ${cityPosition}`);
+            if (!cityPosition || !childPosition) {
+                return {
+                    score: -100,
+                    distance: 0,
+                    name: child.text,
+                };
+            }
+
+            const distance = Math.hypot(
+                childPosition[0] - cityPosition[0],
+                childPosition[1] - cityPosition[1]
+            );
+
+            const score = Math.max(
+                0,
+                Math.round(100 * (1 - distance / 150))
+            );
+
             return {
-                score: -100,
-                distance: 0,
+                score,
+                distance,
                 name: child.text,
             };
-        }
+        });
 
-        const cityPosition = getCityViewportPosition(
-            Number(city.latitude),
-            Number(city.longitude),
-            mapElement
-        );
-
-        const childPosition = getChildViewportPosition(child);
-
-        if (!cityPosition || !childPosition) {
-            return {
-                score: -100,
-                distance: 0,
-                name: child.text,
-            };
-        }
-
-         const distance = Math.hypot(
-            childPosition[0] - cityPosition[0],
-            childPosition[1] - cityPosition[1]
-        );
-
-        const score = Math.max(
-            0,
-            Math.round(100 * (1 - distance / 150))
-        );
-
-        return {
-            score,
-            distance,
-            name: child.text,
-        };
-    });
-
-    setScore(newScores);
-    }, [trigger, children, width, height, setScore]);
+        setScore(newScores);
+    }, [trigger, testData, width, height, setScore]);
 
     useEffect(() => {
         console.log("Terrorist detected")
@@ -304,62 +306,64 @@ export default function DraggableContainer({ mapRef, width, height, setTrigger, 
 
     return (
     <div>
-        <AnimatePresence>
-            {!trigger && <motion.button
-                initial={{ x: '-100%', opacity: 0 }} // Start off-screen to the left
-                animate={{ x: 0, opacity: 1 }}       // Slide into view
-                exit={{ x: '-100%', opacity: 0 }}    // Slide back out to the left
-                transition={{ duration: 5, ease: 'easeInOut' }}
-                ref={parentRef}
-                onMouseDown={handleMouseDown}
-                onKeyDown={(e) => {
-                    if (e.target === e.currentTarget && (e.key === ' ' || e.key === 'Spacebar')) {
-                        e.preventDefault();
-                    }
-                }}
-                style={{
-                    background: 'transparent',
-                    color: 'inherit',
-                    border: 'none',
-                    padding: 0,
-                    margin: 0,
-                    font: 'inherit',
-                    cursor: 'pointer',
-                    outline: 'inherit',
-                    appearance: 'none',
-                    width: '15%',
-                    height: 'auto',
-                    position: 'absolute',
-                    left: '0px',
-                    bottom: '-0px',
-                    textAlign: 'center',
-                }}
-            >
-                <img src={boxImg} className="no-drag" style={{
-                    width: '100%',
-                    height: 'auto',
-                }}/>
-                {children.map((child) => {
-                    let inputRef = inputRefs.current.get(child.id);
-                    if (!inputRef) {
-                        inputRef = createRef<HTMLInputElement>();
-                        inputRefs.current.set(child.id, inputRef);
-                    }
+        <button
+            ref={parentRef}
+            onMouseDown={handleMouseDown}
+            onKeyDown={(e) => {
+                if (e.target === e.currentTarget && (e.key === ' ' || e.key === 'Spacebar')) {
+                    e.preventDefault();
+                }
+            }}
+            style={{
+                background: 'transparent',
+                color: 'inherit',
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                font: 'inherit',
+                cursor: 'pointer',
+                outline: 'inherit',
+                appearance: 'none',
+                width: '15%',
+                height: 'auto',
+                position: 'absolute',
+                left: '0px',
+                bottom: '-0px',
+                textAlign: 'center',
+                visibility: trigger ? 'hidden' : 'visible',
+            }}
+        >
+            <img src={boxImg} className="no-drag" style={{
+                width: '100%',
+                height: 'auto',
+            }}/>
+            {children.map((child) => {
+                let inputRef = inputRefs.current.get(child.id);
+                if (!inputRef) {
+                    inputRef = createRef<HTMLInputElement>();
+                    inputRefs.current.set(child.id, inputRef);
+                }
+                let pinRef = pinRefs.current.get(child.id);
+                if (!pinRef) {
+                    pinRef = createRef<HTMLImageElement>();
+                    pinRefs.current.set(child.id, pinRef);
+                }
 
-                    return <Draggable 
-                        key={child.id}
-                        position={child.position}
-                        onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
-                        onDragStart={handleDragStart}
-                        id={child.id}
-                        setChildren={setChildren}
-                        labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
-                        trigger={trigger}
-                        inputRef={inputRef}
-                    />
-                })}
-            </motion.button>}
-        </AnimatePresence>
+                return <Draggable 
+                    key={child.id}
+                    position={child.position}
+                    onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
+                    onDragStart={handleDragStart}
+                    id={child.id}
+                    setChildren={setChildren}
+                    labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
+                    trigger={trigger}
+                    inputRef={inputRef}
+                    pinRef={pinRef}
+                />
+            })}
+        </button>
+        
         {rootElement && createPortal(
         <button
             onClick={handleCheckButtonClick}

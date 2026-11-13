@@ -17,9 +17,10 @@ interface DraggableProps {
     labelOffset: { x: number; y: number };
     trigger?: boolean;
     inputRef?: React.RefObject<HTMLInputElement | null>;
+    pinRef?: React.RefObject<HTMLImageElement | null>;
 }
 
-export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, trigger, inputRef }: DraggableProps) {
+export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, trigger, inputRef, pinRef }: DraggableProps) {
   const [text, setText] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +54,7 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
         width: trigger ? '25px' : '50px',
         height: trigger ? '25px' : '50px',
       }}>
-        <img src={trigger ? holeImg : pinImg} alt="Pin" draggable='false' style={{ 
+        <img ref={pinRef} src={trigger ? holeImg : pinImg} alt="Pin" draggable='false' style={{
           width: trigger ? '25px' : '50px', 
           height: trigger ? '25px' : '50px',
           zIndex: 100,
