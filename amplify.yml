@@ -4,6 +4,12 @@ frontend:
     preBuild:
       commands:
         - yarn install --frozen-lockfile
+        - |
+          if [ "$AWS_BRANCH" = "main" ]; then
+            yarn build --mode production
+          else
+            yarn build --mode development
+          fi
     build:
       commands:
         - yarn build
