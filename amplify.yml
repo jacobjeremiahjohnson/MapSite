@@ -7,8 +7,10 @@ frontend:
         - |
           if [ "$AWS_BRANCH" = "main" ]; then
             yarn build --mode production
-          else
+          elif [ "$AWS_BRANCH" = "dev" ]; then
             yarn build --mode development
+          else
+            yarn build --mode local
           fi
     build:
       commands:
