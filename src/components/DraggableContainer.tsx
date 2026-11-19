@@ -155,6 +155,7 @@ export default function DraggableContainer({ mapRef, width, height, testData, se
         if (!trigger) {
             setScore([]);
         }
+
     }
     const labelOffsets = useMemo(
         () => getLabelOffsets(children, editingId),
