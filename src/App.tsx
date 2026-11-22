@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import MapController from './components/MapController';
+import SignIn from './components/SignIn';
 // import axios from 'axios';
 
 function App() {
 
   const [trigger, setTrigger] = useState(false);
-  // const [users, setUsers] = useState({});
+  // const [cities, setCities] = useState({});
 
-  // function awsFunction () {
-  //   axios.get('https://iow6swr5ug.execute-api.us-east-1.amazonaws.com/prod/users')
-  //     .then(response => setUsers(response.data))
+  // function awsFunction (state: string, cities: Array<string>) {
+  //   axios.get('https://iow6swr5ug.execute-api.us-east-1.amazonaws.com/prod/cities?state=DE')
+  //     .then(response => setCities(response.data))
   //     .catch(error => console.error("Error fetching data:", error));
   // }
 
@@ -19,7 +20,6 @@ function App() {
   
   useEffect(() => {
 
-    //awsFunction();
     const body = document.body;
     const originalStyle = body.getAttribute('style');
     const root = document.getElementById('root');
@@ -73,35 +73,36 @@ function App() {
   }, []);
 
   // useEffect(() => {
-  //   console.log(users)
-  // }, [users])
+  //   console.log(cities);
+  // }, [cities]);
 
   return (
     <div>
     <div style={{
       width: '100%',
     }}>
-      {/* <div 
-      onClick={() => handleSignIn()}
+      { <div 
       style={{
         position: 'fixed',
         top: '0px',
         right: '0px',
         width: '400px',
         height: '100px',
-        backgroundImage: `url("${new URL('./assets/white-texture_1160-786.avif', import.meta.url)}")`,
+        fontSize: '1rem',
+        borderRadius: '50%',
+        border: '2px solid black',
         textAlign: 'center',
+        backgroundColor: 'white',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         filter: 'drop-shadow(0 0 5px rgba(99, 99, 99, 0.2))',
-        fontSize: '2rem',
         fontFamily: 'serif',
         color: 'black',
         zIndex: 1,
       }}>
-      Sign In / Sign Up
-      </div> */}
+      <SignIn />
+      </div> }
     </div>
     <div style={{
       backgroundImage: `url("${new URL('./assets/white-texture_1160-786.avif', import.meta.url)}")`,

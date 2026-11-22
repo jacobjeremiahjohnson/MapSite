@@ -10,11 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "aws-amplify": "^6.22.2",
     "axios": "^1.20.0",
     "d3": "^7.9.2",
+    "motion": "^14.13.0",
+    "oidc-client-ts": "^3.5.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-icons": "^5.7.0",
+    "react-oidc-context": "^3.3.1",
     "react-rnd": "^10.5.3",
     "vara": "^1.4.1"
   },

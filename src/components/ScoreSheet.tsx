@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useScoreApi } from './postUserScore';
 
 type ScoreItem = {
   score: number;
@@ -9,19 +10,39 @@ type ScoreItem = {
 export default function ScoreSheet({
   score,
   trigger,
+  isLoading
 }: {
   score: ScoreItem[];
   trigger: boolean;
+  isLoading: boolean;
 }) {
+
   const [displayedText, setDisplayedText] = useState<string[]>([]);
+  const { postScore } = useScoreApi();
+  const hasPosted = useRef(false);
+
+  useEffect(() => {
+
+    if (!trigger) {
+      hasPosted.current = false;   // reset so the next round can post again
+      return;
+    }
+    if (hasPosted.current || score.length === 0) return;
+    hasPosted.current = true;
+
+    const uniqueItems = [...new Map(score.map((item) => [item.name, item])).values()];
+    const total = uniqueItems.reduce((sum, item) => sum + item.score, 0);
+    console.log("Score", total)
+    postScore({ score: total })  
+      .then((response) => console.log('Score posted successfully:', response))
+      .catch((error) => console.error('Error posting score:', error));
+  }, [trigger, score]);
 
   useEffect(() => {
     if (!trigger) {
       setDisplayedText([]);
       return;
     }
-
-    console.log('ScoreSheet triggered with score:', score);
 
     // Remove duplicates based on name and calculate total score
 
@@ -61,9 +82,11 @@ export default function ScoreSheet({
 
   }, [trigger, score]);
 
+  if (isLoading) return (null);
+
   return (
-    <div
-      style={{
+      <div
+        style={{
         fontSize: '1.5rem',
         fontFamily: "'Comic Sans MS', 'Comic Sans', cursive",
         fontWeight: 'bold',
@@ -84,7 +107,6 @@ export default function ScoreSheet({
       {displayedText.map((line, index) => {
 
         const isTotal = index === score.length;
-
         return(
         <div
           key={index}
@@ -92,7 +114,7 @@ export default function ScoreSheet({
             display: 'flex',
             flexDirection: 'row',
             justifyContent: 'space-between',
-            fontStyle: isTotal ? 'bold' : 'none',
+            fontStyle: isTotal ? 'italic' : 'none',
             padding: '0.5rem',
             borderBottom: '1px solid #d7d0bf',
           }}
