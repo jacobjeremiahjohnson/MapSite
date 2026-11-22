@@ -5,7 +5,7 @@ function SignIn() {
 
   const signOutRedirect = () => {
     const clientId = "vg11qjm5t5cgm2dtiga48h47u";
-    const logoutUri = "https://www.jacobjjohnson.net/";
+    const logoutUri = import.meta.env.VITE_REDIRECT_URI;
     const cognitoDomain = "https://us-east-1ibdkjbrvb.auth.us-east-1.amazoncognito.com";
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };
