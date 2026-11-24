@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useTrigger } from './functions/TriggerContext'
 import MapController from './components/MapController';
 import SignIn from './components/SignIn';
 // import axios from 'axios';
 
 function App() {
+  const { trigger } = useTrigger();
 
-  const [trigger, setTrigger] = useState(false);
   // const [cities, setCities] = useState({});
 
   // function awsFunction (state: string, cities: Array<string>) {
@@ -130,12 +131,12 @@ function App() {
       }}>
         <div style={{
           fontSize: '6rem',
-          visibility: !trigger ? 'visible' : 'hidden',
+          visibility: trigger ? 'hidden' : 'visible',
           fontWeight: 'bold',
           width: '100%',
           textAlign: 'center',
         }}>Dela-Where?</div>
-        <MapController trigger={trigger} setTrigger={setTrigger} />
+        <MapController />
       </div>
     </div>
     </div>

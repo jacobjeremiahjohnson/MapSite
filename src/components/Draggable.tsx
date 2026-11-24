@@ -5,6 +5,7 @@ import type { Child } from './DraggableContainer';
 import pinImg from '../assets/pin.webp';
 import holeImg from '../assets/woodhole.png'
 import { useState } from 'react';
+import { useTrigger } from '../functions/TriggerContext';
 
 type DragStopHandler = (event: DraggableEvent, data: DraggableData) => void;
 
@@ -15,12 +16,12 @@ interface DraggableProps {
     id: number;
     setChildren: React.Dispatch<React.SetStateAction<Child[]>>;
     labelOffset: { x: number; y: number };
-    trigger?: boolean;
     inputRef?: React.RefObject<HTMLInputElement | null>;
     pinRef?: React.RefObject<HTMLImageElement | null>;
 }
 
-export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, trigger, inputRef, pinRef }: DraggableProps) {
+export default function Draggable({ position, onDragStop, onDragStart, id, setChildren, labelOffset, inputRef, pinRef }: DraggableProps) {
+  const { trigger } = useTrigger();
   const [text, setText] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

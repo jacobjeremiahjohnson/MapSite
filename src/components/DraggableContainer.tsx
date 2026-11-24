@@ -8,17 +8,16 @@ import boxImg from '../assets/box.png';
 import type { DraggableData } from 'react-rnd';
 import type { DraggableEvent } from 'react-draggable';
 import '../App.css';
+import { useTrigger } from '../functions/TriggerContext';
 
 interface DraggableContainerProps {
     mapRef?: React.RefObject<SVGSVGElement | null>;
     width: number;
     height: number;
     testData: { name: string; latitude: number; longitude: number }[];
-    setTrigger: (trigger: boolean) => void;
     children: Child[];
     setChildren: React.Dispatch<React.SetStateAction<Child[]>>;
     setScore: React.Dispatch<React.SetStateAction<{ score: number; distance: number; name: string }[]>>;
-    trigger: boolean;
 }
 
 type Child = {
@@ -76,7 +75,8 @@ const featureCollection = {
   features: geoData,
 };
 
-export default function DraggableContainer({ mapRef, width, height, testData, setTrigger, children, setChildren, trigger, setScore }: DraggableContainerProps) {
+export default function DraggableContainer({ mapRef, width, height, testData, children, setChildren, setScore }: DraggableContainerProps) {
+    const { trigger, toggleTrigger } = useTrigger();
     const [childrenCount, setChildrenCount] = useState(0);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [focusedPinId, setFocusedPinId] = useState<number | null>(null);
@@ -151,7 +151,7 @@ export default function DraggableContainer({ mapRef, width, height, testData, se
 
     const handleCheckButtonClick = () => {
         setEditingId(null);
-        setTrigger(!trigger);
+        toggleTrigger();
         if (!trigger) {
             setScore([]);
         }
@@ -358,7 +358,6 @@ export default function DraggableContainer({ mapRef, width, height, testData, se
                     id={child.id}
                     setChildren={setChildren}
                     labelOffset={labelOffsets.get(child.id) ?? { x: 55, y: 8 }}
-                    trigger={trigger}
                     inputRef={inputRef}
                     pinRef={pinRef}
                 />

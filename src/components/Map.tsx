@@ -2,13 +2,15 @@ import { useMemo } from 'react';
 import geoData from '../assets/DEGeo.json';
 import * as d3 from 'd3';
 import CityMarkers from './CityMarkers';
+import { useTrigger } from '../functions/TriggerContext';
 
 const featureCollection = {
   type: 'FeatureCollection',
   features: geoData,
 };
 
-export default function Map({ mapRef, width, height, testData, children, trigger, isLoading }: { mapRef?: import('react').Ref<SVGSVGElement>; width?: number; height?: number, testData?: { name: string; latitude: number; longitude: number }[], isLoading: boolean, children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }) {
+export default function Map({ mapRef, width, height, testData, children, isLoading }: { mapRef?: import('react').Ref<SVGSVGElement>; width?: number; height?: number, testData?: { name: string; latitude: number; longitude: number }[], isLoading: boolean, children?: { id: number; position: { x: number; y: number }; text: string }[] }) {
+  const { trigger } = useTrigger();
 
   const visualScale = width && height ? Math.min(width / 95, height / 80) : 1;
 
@@ -88,7 +90,7 @@ export default function Map({ mapRef, width, height, testData, children, trigger
           />
       ))}
         </g>
-      <CityMarkers children={children} cityMarkers={cityMarkers} trigger={trigger} isLoading={isLoading} visualScale={visualScale} />
+      <CityMarkers children={children} cityMarkers={cityMarkers} isLoading={isLoading} visualScale={visualScale} />
     </svg>
   );
 }

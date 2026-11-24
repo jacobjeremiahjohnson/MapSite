@@ -1,12 +1,11 @@
 import Map from './Map';
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ScoreSheet from './ScoreSheet';
+import { useTrigger } from '../functions/TriggerContext'
 import DraggableContainer from './DraggableContainer';
-import fetchCityCoords from './fetchCityCoords';
+import fetchCityCoords from '../functions/fetchCityCoords';
 
-const MapComponent = Map as ComponentType<{ mapRef?: React.RefObject<SVGSVGElement | null>; width?: number; height?: number; testData?: { name: string; latitude: number; longitude: number }[], isLoading?: boolean, children?: { id: number; position: { x: number; y: number }; text: string }[], trigger?: boolean }>;
-
-export default function MapController({ trigger, setTrigger }: { trigger: boolean; setTrigger: (trigger: boolean) => void }) {
+export default function MapController() {
     const mapRef = useRef<SVGSVGElement | null>(null);
     const dropZoneRef = useRef<HTMLDivElement | null>(null);
     const [children, setChildren] = useState<{ id: number; position: { x: number; y: number }; text: string }[]>([]);
@@ -14,6 +13,8 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
     const [size, setSize] = useState({ width: 0, height: 0 });
     const [testData, setTestData] = useState<{ name: string; latitude: number; longitude: number }[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const { trigger } = useTrigger();
     //const [error, setError] = useState<string | null>(null);
     
     useEffect(() => {
@@ -76,8 +77,8 @@ export default function MapController({ trigger, setTrigger }: { trigger: boolea
       border: '2px solid black',
       backfaceVisibility: 'hidden',
     }}>
-      <DraggableContainer mapRef={mapRef} testData={testData} setScore={setScore} setTrigger={setTrigger} children={children} setChildren={setChildren} width={size.width} height={size.height} trigger={trigger} />
-      <MapComponent mapRef={mapRef} width={size.width} height={size.height} testData={testData} children={children} trigger={trigger} isLoading={loading} />
-      {trigger && <ScoreSheet isLoading={loading} score={score} trigger={trigger} />}
+      <DraggableContainer mapRef={mapRef} testData={testData} setScore={setScore} children={children} setChildren={setChildren} width={size.width} height={size.height} />
+      <Map mapRef={mapRef} width={size.width} height={size.height} testData={testData} children={children} isLoading={loading} />
+      {trigger && <ScoreSheet isLoading={loading} score={score} />}
     </div>
 )};

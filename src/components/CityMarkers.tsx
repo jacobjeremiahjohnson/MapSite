@@ -1,5 +1,8 @@
 
-export default function CityMarkers({ children, cityMarkers, trigger, isLoading, visualScale }: { children?: { id: number; position: { x: number; y: number }; text: string }[], cityMarkers?: { id: number; name: string; pop: number; x: number; y: number }[], trigger?: boolean, isLoading?: boolean, visualScale: number }) {
+import { useTrigger } from '../functions/TriggerContext';
+
+export default function CityMarkers({ children, cityMarkers, isLoading, visualScale }: { children?: { id: number; position: { x: number; y: number }; text: string }[], cityMarkers?: { id: number; name: string; pop: number; x: number; y: number }[], isLoading?: boolean, visualScale: number }) {
+    const { trigger } = useTrigger();
   
     if (!trigger || isLoading) {
         return null;

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { AuthProvider } from "react-oidc-context";
+import { TriggerProvider } from "./functions/TriggerContext.tsx"
 
 const cognitoAuthConfig = {
   authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_IbdkjbRvb",
@@ -17,7 +18,9 @@ const cognitoAuthConfig = {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider {...cognitoAuthConfig}>
-      <App />
+      <TriggerProvider>
+        <App />
+      </TriggerProvider>
     </AuthProvider>
   </StrictMode>
 )

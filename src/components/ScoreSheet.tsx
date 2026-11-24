@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useScoreApi } from './postUserScore';
+import { useScoreApi } from '../functions/postUserScore';
+import { useTrigger } from '../functions/TriggerContext';
 
 type ScoreItem = {
   score: number;
@@ -9,14 +10,13 @@ type ScoreItem = {
 
 export default function ScoreSheet({
   score,
-  trigger,
   isLoading
 }: {
   score: ScoreItem[];
-  trigger: boolean;
   isLoading: boolean;
 }) {
 
+  const { trigger } = useTrigger();
   const [displayedText, setDisplayedText] = useState<string[]>([]);
   const { postScore } = useScoreApi();
   const hasPosted = useRef(false);
