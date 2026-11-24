@@ -40,7 +40,8 @@ export default function Draggable({ position, onDragStop, onDragStart, id, setCh
         disableDragging={trigger}
         className="draggable-pin"
         style={{
-          visibility: trigger ? 'visible' : 'visible'
+          visibility: 'visible',
+          pointerEvents: 'auto',
         }}
         onMouseDown={(e) => {
           e.stopPropagation();

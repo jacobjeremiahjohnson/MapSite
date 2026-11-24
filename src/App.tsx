@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { useTrigger } from './functions/TriggerContext'
+import { useFlipProgress, useTrigger } from './functions/TriggerContext'
 import MapController from './components/MapController';
 import SignIn from './components/SignIn';
 // import axios from 'axios';
 
 function App() {
   const { trigger } = useTrigger();
+  const flipProgress = useFlipProgress();
 
   // const [cities, setCities] = useState({});
 
@@ -116,8 +117,8 @@ function App() {
       clipPath: 'polygon(0 0, 100% 0, 100% 93.5%, 87% 100%, 0 100%)',
       perspective: '1000px',
       transformStyle: 'preserve-3d',
-      transform: trigger ? 'rotateY(180deg)' : 'none',
-      transition: 'transform 0.2s ease',
+      transform: `rotateY(${(flipProgress ?? (trigger ? 1 : 0)) * 180}deg)`,
+      transition: flipProgress === null ? 'transform 0.2s ease' : 'none',
     }}>
       <div style={{
         position: 'relative',

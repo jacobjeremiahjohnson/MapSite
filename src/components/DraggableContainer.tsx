@@ -8,7 +8,7 @@ import boxImg from '../assets/box.png';
 import type { DraggableData } from 'react-rnd';
 import type { DraggableEvent } from 'react-draggable';
 import '../App.css';
-import { useTrigger } from '../functions/TriggerContext';
+import { useSetFlipProgress, useTrigger } from '../functions/TriggerContext';
 
 interface DraggableContainerProps {
     mapRef?: React.RefObject<SVGSVGElement | null>;
@@ -77,43 +77,43 @@ const featureCollection = {
 
 export default function DraggableContainer({ mapRef, width, height, testData, children, setChildren, setScore }: DraggableContainerProps) {
     const { trigger, toggleTrigger } = useTrigger();
+    const setFlipProgress = useSetFlipProgress();
     const [childrenCount, setChildrenCount] = useState(0);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [focusedPinId, setFocusedPinId] = useState<number | null>(null);
     const inputRefs = useRef<Map<number, React.RefObject<HTMLInputElement | null>>>(new Map());
     const pinRefs = useRef<Map<number, React.RefObject<HTMLImageElement | null>>>(new Map());
     const parentRef = useRef<HTMLButtonElement | null>(null);
+    const checkButtonDragRef = useRef<{
+        pointerId: number;
+        startX: number;
+        startY: number;
+        moved: boolean;
+    } | null>(null);
+    const suppressCheckClickRef = useRef(false);
 
     const pendingDragRef = useRef<{
         id: number;
-        startX: number;
-        startY: number;
-        startPosX: number;
-        startPosY: number;
     } | null>(null);    
 
     const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (e.button !== 0) return;
 
-        const bounds = e.currentTarget.getBoundingClientRect();
+        const bounds = mapRef?.current?.getBoundingClientRect();
+        if (!bounds?.width || !bounds.height) return;
+
         const id = childrenCount;
-
-        const startPosX = e.clientX - bounds.left - 25;
-        const startPosY = e.clientY - bounds.top - 25;
-
-        pendingDragRef.current = {
-            id,
-            startX: e.clientX,
-            startY: e.clientY,
-            startPosX,
-            startPosY,
+        const position = {
+            x: (e.clientX - bounds.left - 25) / bounds.width,
+            y: (e.clientY - bounds.top - 25) / bounds.height,
         };
 
+        pendingDragRef.current = { id };
         setChildren(prev => [
             ...prev,
             {
                 id,
-                position: { x: startPosX, y: startPosY },
+                position,
                 text: '',
             },
         ]);
@@ -122,15 +122,18 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
     };
 
     const handleDragStop = (_event: DraggableEvent, d: DraggableData, id: number): void => {
-        const parentBox = parentRef?.current?.getBoundingClientRect();
+        const trayBounds = parentRef.current?.getBoundingClientRect();
+        const mapBounds = mapRef?.current?.getBoundingClientRect();
 
-        if (!parentBox) return;
+        if (!trayBounds || !mapBounds?.width || !mapBounds.height) return;
 
+        const pinCenterX = mapBounds.left + d.x + 25;
+        const pinCenterY = mapBounds.top + d.y + 25;
         const inside =
-            d.x >= 0 &&
-            d.y >= 0 &&
-            d.x <= parentBox.width &&
-            d.y <= parentBox.height;
+            pinCenterX >= trayBounds.left &&
+            pinCenterX <= trayBounds.right &&
+            pinCenterY >= trayBounds.top &&
+            pinCenterY <= trayBounds.bottom;
         
         if (inside) {
             setChildren(prev =>
@@ -140,7 +143,9 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
         }
 
         setChildren(prev => prev.map(child =>
-            child.id === id ? { ...child, position: { x: d.x, y: d.y } } : child
+            child.id === id
+                ? { ...child, position: { x: d.x / mapBounds.width, y: d.y / mapBounds.height } }
+                : child
         ));
         setFocusedPinId(id);
     };
@@ -157,10 +162,60 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
         }
 
     }
-    const labelOffsets = useMemo(
-        () => getLabelOffsets(children, editingId),
-        [children, editingId]
-    );
+    const handleCheckButtonPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+        if (!event.isPrimary || event.button !== 0) return;
+
+        suppressCheckClickRef.current = false;
+        checkButtonDragRef.current = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            moved: false,
+        };
+        event.currentTarget.setPointerCapture(event.pointerId);
+    };
+    const handleCheckButtonPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+        const drag = checkButtonDragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+
+        const x = event.clientX - drag.startX;
+        const y = event.clientY - drag.startY;
+        if (Math.hypot(x, y) > 8) drag.moved = true;
+        const dragTowardOppositeSide = trigger ? x : -x;
+        const progress = Math.max(0, Math.min(1, dragTowardOppositeSide / (window.innerWidth * 0.15)));
+        setFlipProgress(trigger ? 1 - progress : progress);
+    };
+    const handleCheckButtonPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+        const drag = checkButtonDragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+
+        checkButtonDragRef.current = null;
+        setFlipProgress(null);
+
+        if (!drag.moved) return;
+
+        suppressCheckClickRef.current = true;
+        window.setTimeout(() => {
+            suppressCheckClickRef.current = false;
+        }, 0);
+
+        const horizontalDrag = event.clientX - drag.startX;
+        const dragTowardOppositeSide = trigger ? horizontalDrag : -horizontalDrag;
+        if (dragTowardOppositeSide > window.innerWidth * 0.15) {
+            handleCheckButtonClick();
+        }
+    };
+    const handleCheckButtonPointerCancel = () => {
+        checkButtonDragRef.current = null;
+        setFlipProgress(null);
+    };
+    const labelOffsets = useMemo(() => getLabelOffsets(
+        children.map(child => ({
+            ...child,
+            position: { x: child.position.x * width, y: child.position.y * height },
+        })),
+        editingId
+    ), [children, editingId, width, height]);
     const rootElement = document.getElementById('root');
 
     useEffect(() => {
@@ -272,8 +327,8 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
             const pending = pendingDragRef.current;
             if (!pending) return;
 
-            const dx = e.clientX - pending.startX;
-            const dy = e.clientY - pending.startY;
+            const mapBounds = mapRef?.current?.getBoundingClientRect();
+            if (!mapBounds?.width || !mapBounds.height) return;
 
             setChildren(prev =>
                 prev.map(child =>
@@ -281,8 +336,8 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
                         ? {
                             ...child,
                             position: {
-                                x: pending.startPosX + dx,
-                                y: pending.startPosY + dy,
+                                x: (e.clientX - mapBounds.left - 25) / mapBounds.width,
+                                y: (e.clientY - mapBounds.top - 25) / mapBounds.height,
                             },
                         }
                         : child
@@ -303,10 +358,17 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
             window.removeEventListener('mousemove', handleMove);
             window.removeEventListener('mouseup', handleUp);
         };
-    }, [setChildren]);
+    }, [mapRef, setChildren]);
 
     return (
-    <div>
+    <div style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 1,
+        pointerEvents: 'none',
+    }}>
         <button
             ref={parentRef}
             onMouseDown={handleMouseDown}
@@ -332,12 +394,15 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
                 bottom: '-0px',
                 textAlign: 'center',
                 visibility: trigger ? 'hidden' : 'visible',
+                pointerEvents: 'auto',
             }}
         >
             <img src={boxImg} className="no-drag" style={{
                 width: '100%',
                 height: 'auto',
-            }}/>
+            }} />
+        </button>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
             {children.map((child) => {
                 let inputRef = inputRefs.current.get(child.id);
                 if (!inputRef) {
@@ -352,7 +417,7 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
 
                 return <Draggable 
                     key={child.id}
-                    position={child.position}
+                    position={{ x: child.position.x * width, y: child.position.y * height }}
                     onDragStop={(e, d) => handleDragStop(e, d, child.id)} 
                     onDragStart={handleDragStart}
                     id={child.id}
@@ -362,11 +427,18 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
                     pinRef={pinRef}
                 />
             })}
-        </button>
+        </div>
         
         {rootElement && createPortal(
         <button
-            onClick={handleCheckButtonClick}
+            onPointerDown={handleCheckButtonPointerDown}
+            onPointerMove={handleCheckButtonPointerMove}
+            onPointerUp={handleCheckButtonPointerUp}
+            onPointerCancel={handleCheckButtonPointerCancel}
+            onClick={() => {
+                if (suppressCheckClickRef.current) return;
+                handleCheckButtonClick();
+            }}
             style={{ 
                 position: 'absolute', 
                 zIndex: 1, 
@@ -377,12 +449,14 @@ export default function DraggableContainer({ mapRef, width, height, testData, ch
                 height: '10%', 
                 background: 'transparent', 
                 border: 'none', 
-                cursor: 'pointer',
+                cursor: checkButtonDragRef.current ? 'grabbing' : 'grab',
+                touchAction: 'none',
+                userSelect: 'none',
                 transform: trigger ? 'rotateY(180deg)' : 'none',
-                transition: 'transform 0.2s ease',
+                transition: checkButtonDragRef.current ? 'none' : 'transform 0.2s ease',
             }}
         >
-            <img src={cornerImg} alt="Check" style={{ width: '100%', height: '100%' }} />
+            <img src={cornerImg} alt="Check" draggable={false} style={{ width: '100%', height: '100%' }} />
         </button>, rootElement)}
     </div>
 )};

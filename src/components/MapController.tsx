@@ -77,8 +77,10 @@ export default function MapController() {
       border: '2px solid black',
       backfaceVisibility: 'hidden',
     }}>
-      <DraggableContainer mapRef={mapRef} testData={testData} setScore={setScore} children={children} setChildren={setChildren} width={size.width} height={size.height} />
-      <Map mapRef={mapRef} width={size.width} height={size.height} testData={testData} children={children} isLoading={loading} />
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <Map mapRef={mapRef} width={size.width} height={size.height} testData={testData} children={children} isLoading={loading} />
+        <DraggableContainer mapRef={mapRef} testData={testData} setScore={setScore} children={children} setChildren={setChildren} width={size.width} height={size.height} />
+      </div>
       {trigger && <ScoreSheet isLoading={loading} score={score} />}
     </div>
 )};
